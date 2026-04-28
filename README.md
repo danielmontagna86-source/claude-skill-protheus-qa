@@ -63,12 +63,31 @@ Evidência -> prova do resultado
 └── evals/
 ```
 
+## Instalação
+
+### Opção 1 - Claude CLI
+
+Quando o comando de instalação de skills estiver disponível no seu ambiente:
+
+```bash
+claude skill install https://github.com/danielmontagna86-source/claude-skill-protheus-qa
+```
+
+### Opção 2 - Instalação manual
+
+```bash
+mkdir -p ~/.claude/skills
+git clone https://github.com/danielmontagna86-source/claude-skill-protheus-qa.git ~/.claude/skills/claude-skill-protheus-qa
+```
+
+Depois reinicie ou recarregue o Claude Code para reconhecer a skill local.
+
 ## Módulos priorizados
 
 - Financeiro
 - Faturamento
-- Compras
 - Estoque
+- Compras
 
 ## Uso esperado
 
@@ -82,6 +101,10 @@ Crie um template PROBAT para uma regra isolada ADVPL.
 Crie um roteiro TIR para validar mensagem no WebApp.
 ```
 
+## Validação
+
+Use os cenários em `evals/eval-mvp.md` para verificar se a skill retorna o formato padrão com 13 itens obrigatórios.
+
 ## Status
 
-Versão inicial planejada para validação técnica e evolução incremental.
+Versão inicial para validação técnica e evolução incremental.
