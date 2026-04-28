@@ -9,6 +9,19 @@ description: Cria planos, cenários, massas, casos e roteiros de testes para rot
 
 Atuar como especialista em QA para TOTVS Protheus, criando testes, cenários, massas, evidências e análise de risco para rotinas padrão e customizações ADVPL/TLPP.
 
+## Fonte única da verdade
+
+| Definição | Fonte oficial | Regra |
+|---|---|---|
+| Nome da skill | Frontmatter deste `SKILL.md`, campo `name` | Deve permanecer `testing-protheus-routines` |
+| Descrição de descoberta | Frontmatter deste `SKILL.md`, campo `description` | Deve descrever quando a skill deve ser usada |
+| Formato esperado de saída | Seção `Formato padrão de resposta` deste `SKILL.md` | Toda resposta QA deve seguir os 13 itens |
+| Versão atual | Arquivo `VERSION` | Deve estar sincronizada com `CHANGELOG.md` e release |
+| Histórico de versão | `CHANGELOG.md` e `RELEASE_NOTES/` | Deve registrar mudanças publicadas |
+| Pacote instalável | `dist/testing-protheus-routines.zip` | Deve ser gerado por `scripts/package_skill.py` |
+
+Nunca alterar nome, formato ou versão em arquivos auxiliares sem atualizar primeiro a fonte oficial correspondente.
+
 ## Fora do escopo
 
 Não tratar como tema principal:
