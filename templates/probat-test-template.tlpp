@@ -1,0 +1,35 @@
+#include "tlpp-core.th"
+#include "tlpp-probat.th"
+
+namespace custom.tests.<modulo>
+
+using namespace tlpp.probat
+
+@TestFixture(owner='qa-protheus', target='<fonte-alvo>')
+class Test<NomeDaRegra>
+
+    @Test('deve validar cenário positivo da regra')
+    public method deveValidarCenarioPositivo()
+
+    @Test('deve bloquear cenário inválido da regra')
+    public method deveBloquearCenarioInvalido()
+
+endclass
+
+public method deveValidarCenarioPositivo() class Test<NomeDaRegra>
+    local lRet := .T.
+
+    // TODO: chamar função/regra isolada
+    // lRet := U_<Regra>(<parametros>)
+
+    assertTrue(lRet, 'Cenário positivo deve retornar verdadeiro')
+return .T.
+
+public method deveBloquearCenarioInvalido() class Test<NomeDaRegra>
+    local lRet := .F.
+
+    // TODO: chamar função/regra isolada com massa inválida
+    // lRet := U_<Regra>(<parametros_invalidos>)
+
+    assertFalse(lRet, 'Cenário inválido deve retornar falso')
+return .T.
