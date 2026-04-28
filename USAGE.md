@@ -26,65 +26,43 @@ em uma resposta estruturada com:
 12. Evidência esperada.
 13. Limitações.
 
-## Prompts recomendados
+## Fonte única da verdade para uso
 
-### Financeiro
+| Item | Fonte oficial |
+|---|---|
+| Nome da skill | `SKILL.md` > frontmatter `name` |
+| Versão atual | `VERSION` |
+| Formato esperado de saída | `SKILL.md` > `Formato padrão de resposta` |
+| Critérios de aceite | `evals/eval-mvp.md` |
+| Exemplos de prompt | Este arquivo e `examples/` |
 
-```text
-Crie testes para uma customização na FINA050 que bloqueia título a pagar sem natureza financeira.
-```
+## Prompts recomendados e critérios de aceite
 
-### Faturamento
+| ID | Prompt | Eval correspondente | Critério de aceite resumido |
+|---|---|---|---|
+| EX-FIN-001 | `Crie testes para uma customização na FINA050 que bloqueia título a pagar sem natureza financeira.` | `evals/eval-mvp.md` > Eval 1 | Deve classificar Financeiro/FINA050, usar SE2, retornar 13 itens, definir massa e evidência |
+| EX-FAT-001 | `Monte QA para customização na MATA410 que bloqueia pedido de venda com preço abaixo do mínimo.` | `evals/eval-mvp.md` > Eval 2 | Deve classificar Faturamento/MATA410, usar SC5/SC6, separar PROBAT para regra e TIR para mensagem |
+| EX-FAT-002 | `Monte testes para MATA460 validando geração de documento de saída, título financeiro e baixa de estoque.` | `evals/eval-mvp.md` > Eval 5 | Deve usar SF2/SD2, considerar SC5/SC6, SE1 e SB2 conforme cenário |
+| EX-COM-001 | `Monte testes para MATA120 com validação de centro de custo obrigatório.` | `evals/eval-mvp.md` > Eval 3 | Deve classificar Compras/MATA120, usar SC7, definir fornecedor, produto, quantidade, preço e centro de custo |
+| EX-EST-001 | `Crie um roteiro de testes para MATA010 validando unidade de medida e armazém padrão.` | `evals/eval-mvp.md` > Eval 4 | Deve classificar Estoque/Cadastros/MATA010, usar SB1 e considerar SB2/SB5 quando aplicável |
+| EX-DIC-001 | `Crie testes para uma validação SX3 no campo de natureza e um gatilho SX7 que preenche centro de custo automaticamente.` | `evals/eval-mvp.md` > Eval 6 | Deve classificar SX3/SX7 sem inventar dicionário, pedir confirmação/exportação quando necessário |
+| EX-AUT-001 | `Crie um exemplo PROBAT para uma função ADVPL que valida preço mínimo no pedido de venda.` | `evals/eval-mvp.md` > Eval 2 | Deve usar PROBAT somente para regra isolada, não para interface |
+| EX-AUT-002 | `Crie um roteiro ExecAuto conceitual para testar inclusão de título a pagar na FINA050.` | `evals/eval-mvp.md` > Eval 1 | Deve tratar ExecAuto como técnica condicionada à confirmação no ambiente |
+| EX-AUT-003 | `Crie um roteiro FwModel para validar cadastro de produto na MATA010.` | `evals/eval-mvp.md` > Eval 4 | Deve tratar FwModel como técnica condicionada à confirmação no ambiente |
+| EX-AUT-004 | `Crie um roteiro TIR para validar mensagem visual na MATA410.` | `evals/eval-mvp.md` > Eval 2 | Deve usar TIR para tela/mensagem, não para regra isolada |
 
-```text
-Monte QA para customização na MATA410 que bloqueia pedido de venda com preço abaixo do mínimo.
-```
+## Como validar uma resposta gerada
 
-```text
-Monte testes para MATA460 validando geração de documento de saída, título financeiro e baixa de estoque.
-```
+Uma resposta é aceita quando:
 
-### Compras
-
-```text
-Monte testes para MATA120 com validação de centro de custo obrigatório.
-```
-
-### Estoque
-
-```text
-Crie um roteiro de testes para MATA010 validando unidade de medida e armazém padrão.
-```
-
-### SX3/SX7/SXB
-
-```text
-Crie testes para uma validação SX3 no campo de natureza e um gatilho SX7 que preenche centro de custo automaticamente.
-```
-
-### PROBAT
-
-```text
-Crie um exemplo PROBAT para uma função ADVPL que valida preço mínimo no pedido de venda.
-```
-
-### ExecAuto
-
-```text
-Crie um roteiro ExecAuto conceitual para testar inclusão de título a pagar na FINA050.
-```
-
-### FwModel
-
-```text
-Crie um roteiro FwModel para validar cadastro de produto na MATA010.
-```
-
-### TIR
-
-```text
-Crie um roteiro TIR para validar mensagem visual na MATA410.
-```
+1. contém os 13 itens definidos em `SKILL.md`;
+2. identifica rotina, módulo, tabela e objetivo;
+3. escolhe a técnica de teste de acordo com o risco;
+4. não inventa campo, parâmetro, ponto de entrada ou comportamento sem fonte;
+5. define massa mínima de teste;
+6. define evidência esperada;
+7. conecta o exemplo ao eval correspondente;
+8. explicita limitações e hipóteses do ambiente.
 
 ## Boas práticas
 
@@ -104,3 +82,7 @@ Crie um roteiro TIR para validar mensagem visual na MATA410.
 ## Validação
 
 Use `evals/eval-mvp.md` para testar se a skill está respondendo no padrão correto.
+
+```bash
+python scripts/validate_skill.py
+```
