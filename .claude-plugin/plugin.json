@@ -2,6 +2,7 @@
   "name": "protheus-qa",
   "description": "QA specialist for TOTVS Protheus/ADVPL routines. Generates test plans, scenarios, data, automation strategy and evidence using TDN, PROBAT, ExecAuto, FwModel and TIR.",
   "version": "0.1.0",
+  "skills": "./",
   "author": {
     "name": "Daniel Montagna",
     "url": "https://github.com/danielmontagna86-source"
@@ -16,7 +17,7 @@
     "totvs",
     "qa",
     "testing",
-    "probAT",
+    "probat",
     "execauto",
     "fwmodel",
     "tir"
