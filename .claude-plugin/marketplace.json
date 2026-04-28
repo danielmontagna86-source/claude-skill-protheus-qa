@@ -1,0 +1,31 @@
+{
+  "name": "protheus-qa-marketplace",
+  "description": "Marketplace self-hosted para plugins Claude Code focados em TOTVS Protheus, ADVPL/TLPP e QA técnico.",
+  "owner": {
+    "name": "Daniel Montagna",
+    "url": "https://github.com/danielmontagna86-source"
+  },
+  "plugins": [
+    {
+      "name": "protheus-qa",
+      "description": "QA specialist for TOTVS Protheus/ADVPL routines. Generates test plans, scenarios, data, automation strategy and evidence using TDN, PROBAT, ExecAuto, FwModel and TIR.",
+      "version": "0.1.0",
+      "repository": "https://github.com/danielmontagna86-source/claude-skill-protheus-qa",
+      "source": "github:danielmontagna86-source/claude-skill-protheus-qa",
+      "ref": "main",
+      "license": "MIT",
+      "keywords": [
+        "protheus",
+        "advpl",
+        "tlpp",
+        "totvs",
+        "qa",
+        "testing",
+        "probat",
+        "execauto",
+        "fwmodel",
+        "tir"
+      ]
+    }
+  ]
+}
