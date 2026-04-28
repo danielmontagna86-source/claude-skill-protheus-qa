@@ -14,11 +14,67 @@ Mas a skill declarada em `SKILL.md` se chama:
 name: testing-protheus-routines
 ```
 
-Para evitar problemas de descoberta pelo Claude, instale sempre usando a pasta final:
+Para evitar problemas de descoberta pelo Claude, a pasta final da skill deve ser sempre:
 
 ```text
 testing-protheus-routines
 ```
+
+## Caminho recomendado: pacote oficial
+
+O pacote oficial deve ser o arquivo:
+
+```text
+testing-protheus-routines.zip
+```
+
+A estrutura interna do ZIP deve ser:
+
+```text
+testing-protheus-routines.zip
+└── testing-protheus-routines/
+    ├── SKILL.md
+    ├── README.md
+    ├── INSTALL.md
+    ├── USAGE.md
+    ├── examples/
+    ├── evals/
+    ├── references/
+    ├── routines/
+    ├── scripts/
+    └── templates/
+```
+
+### Gerar pacote localmente
+
+Na raiz do repositório:
+
+```bash
+python scripts/validate_skill.py
+python scripts/package_skill.py
+```
+
+Saída esperada:
+
+```text
+dist/testing-protheus-routines.zip
+```
+
+### Gerar pacote pelo GitHub Actions
+
+O workflow `.github/workflows/validate-and-package.yml` valida a skill e gera o artefato:
+
+```text
+testing-protheus-routines
+```
+
+Esse artefato contém o arquivo:
+
+```text
+dist/testing-protheus-routines.zip
+```
+
+Use esse ZIP para instalação no Claude.ai.
 
 ## Instalação local no Claude Code
 
@@ -52,6 +108,7 @@ git commit -m "Add Protheus QA Claude Skill"
 ```bash
 cd ~/.claude/skills/testing-protheus-routines
 git pull
+python scripts/validate_skill.py
 ```
 
 ### Instalação por projeto
@@ -59,22 +116,47 @@ git pull
 ```bash
 cd .claude/skills/testing-protheus-routines
 git pull
+python scripts/validate_skill.py
 ```
 
-## Empacotar para Claude.ai
+## Instalação no Claude.ai
 
-Para subir manualmente no Claude.ai:
+Opção recomendada:
+
+1. Gere ou baixe `testing-protheus-routines.zip`.
+2. Confirme que o ZIP contém a pasta raiz `testing-protheus-routines/`.
+3. Envie o arquivo em:
+
+```text
+Claude.ai > Customize > Skills
+```
+
+## Empacotamento manual alternativo
+
+Use somente se não for usar `scripts/package_skill.py`:
 
 ```bash
 git clone https://github.com/danielmontagna86-source/claude-skill-protheus-qa.git testing-protheus-routines
 zip -r testing-protheus-routines.zip testing-protheus-routines
 ```
 
-Depois envie o arquivo `testing-protheus-routines.zip` em:
+Antes de enviar, valide que a pasta raiz dentro do ZIP é `testing-protheus-routines/`, e não `claude-skill-protheus-qa/`.
+
+## Validação local
+
+Execute:
+
+```bash
+python scripts/validate_skill.py
+```
+
+O retorno esperado é:
 
 ```text
-Claude.ai > Customize > Skills
+Skill validation passed.
 ```
+
+Se houver erro, corrija antes de empacotar ou distribuir.
 
 ## Teste após instalação
 
@@ -99,3 +181,12 @@ A resposta esperada deve trazer:
 11. Exemplo de automação ou roteiro.
 12. Evidência esperada.
 13. Limitações.
+
+## Checklist antes de distribuir
+
+- `SKILL.md` existe na raiz.
+- O `name` do frontmatter é `testing-protheus-routines`.
+- O ZIP final se chama `testing-protheus-routines.zip`.
+- A pasta raiz dentro do ZIP se chama `testing-protheus-routines/`.
+- `python scripts/validate_skill.py` passa sem erro.
+- `evals/eval-mvp.md` foi usado para validar respostas de exemplo.
