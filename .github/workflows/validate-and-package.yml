@@ -1,0 +1,35 @@
+name: Validate and package Claude Skill
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  validate-and-package:
+    name: Validate and package
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Validate skill structure
+        run: python scripts/validate_skill.py
+
+      - name: Build official ZIP package
+        run: python scripts/package_skill.py
+
+      - name: Upload skill package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: testing-protheus-routines
+          path: dist/testing-protheus-routines.zip
+          if-no-files-found: error
