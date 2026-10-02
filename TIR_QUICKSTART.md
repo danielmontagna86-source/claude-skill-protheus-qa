@@ -2,7 +2,7 @@
 
 ## 1. Escopo e preparação
 
-O executor 0.2.0-rc.1 aceita apenas consulta por APIs públicas selecionadas. Não preenche campos, grava, exclui, envia arquivos, executa SQL, chama métodos internos nem importa Python arbitrário fornecido pelo agente. O código gerado é um artefato de revisão; o worker usa a especificação validada no motor fixo. Executar esse arquivo gerado diretamente não autoriza uma sessão.
+O executor desta candidata aceita apenas consulta por APIs públicas selecionadas. Não preenche campos, grava, exclui, envia arquivos, executa SQL, chama métodos internos nem importa Python arbitrário fornecido pelo agente. O código gerado é um artefato de revisão; o worker usa a especificação validada no motor fixo. Executar esse arquivo gerado diretamente não autoriza uma sessão.
 
 Uma consulta ainda pode disparar código customizado ao abrir a rotina. O responsável técnico precisa confirmar que a rotina e as navegações aprovadas não têm efeitos de negócio. O isolamento deve existir na rede, nas contas e nas integrações; não apenas no nome do ambiente.
 

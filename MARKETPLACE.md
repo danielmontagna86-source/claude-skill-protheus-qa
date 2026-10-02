@@ -1,96 +1,51 @@
 # Claude Code Plugin / Marketplace
 
-Este repositório está preparado para funcionar como plugin do Claude Code e também como fonte de marketplace self-hosted.
+Plugin: `protheus-qa`. Marketplace próprio: `protheus-qa-marketplace`.
+Skill: `testing-protheus-routines`. **Versão: consultar [VERSION](VERSION)**; os dois manifestos devem estar sincronizados com esse arquivo.
 
-## Plugin
+## Manifestos
 
-```text
-Nome do plugin: protheus-qa
-Versão: 0.1.0
-Manifesto: .claude-plugin/plugin.json
-Skill carregada: testing-protheus-routines
-Arquivo principal da skill: SKILL.md
-```
-
-O manifesto do plugin aponta para a skill existente na raiz do repositório:
+`.claude-plugin/plugin.json` aponta `skills` para `./`, preservando a skill na raiz. A origem no catálogo `.claude-plugin/marketplace.json` é um objeto, não uma string `github:`:
 
 ```json
 {
-  "skills": "./"
+  "source": "github",
+  "repo": "danielmontagna86-source/claude-skill-protheus-qa",
+  "ref": "main"
 }
 ```
 
-Isso evita duplicar a árvore de arquivos e mantém compatibilidade com a instalação manual da Claude Skill.
+## Instalação pelo marketplace próprio
 
-## Marketplace self-hosted
+No terminal com Claude Code instalado:
 
-O catálogo local do marketplace está em:
-
-```text
-.claude-plugin/marketplace.json
+```shell
+claude plugin marketplace add danielmontagna86-source/claude-skill-protheus-qa
+claude plugin install protheus-qa@protheus-qa-marketplace
+claude plugin list
+claude plugin details protheus-qa
 ```
 
-Ele expõe o plugin:
+O comando de registro recebe a origem. O nome do marketplace vem do JSON; não passe um nome extra antes da origem. O identificador de instalação combina `plugin@marketplace`.
 
-```text
-protheus-qa
+Para validar os manifestos de um clone local:
+
+```shell
+claude plugin validate .
 ```
 
-com origem no repositório:
+Esses comandos são instruções, não uma declaração de instalação ou de teste do cliente Claude Code realizado nesta entrega. A configuração acompanha `main`; para revisão de uma versão fixa, use o pacote da tag publicada.
 
-```text
-github:danielmontagna86-source/claude-skill-protheus-qa
-```
+## Instalação direta da skill
 
-## Instalação manual da Skill
+Alternativa por projeto: clonar na pasta `.claude/skills/testing-protheus-routines`, conforme [README](README.md). Não instale simultaneamente cópias divergentes por plugin e diretório local. A instalação não fornece Python, navegador, driver ou um ERP; consulte [TIR_QUICKSTART](TIR_QUICKSTART.md).
 
-Para instalar como skill local:
+## Validação e distribuição
 
-```bash
-mkdir -p ~/.claude/skills
+Após instalar, confirme que a skill aparece e produza um plano com os 13 itens canônicos, sem acesso ao ERP. O CI valida scripts, contrato e pacote; não autentica em Claude Code nem Protheus.
 
-git clone https://github.com/danielmontagna86-source/claude-skill-protheus-qa.git \
-~/.claude/skills/testing-protheus-routines
-```
+Este é um marketplace próprio. Não houve submissão, aprovação ou inclusão no catálogo oficial da Anthropic. O projeto também não possui certificação TOTVS.
 
-## Instalação como plugin Claude Code
-
-Clone o repositório:
-
-```bash
-git clone https://github.com/danielmontagna86-source/claude-skill-protheus-qa.git
-cd claude-skill-protheus-qa
-```
-
-Depois use o fluxo de plugins da sua versão do Claude Code para instalar o plugin a partir do repositório local ou remoto.
-
-Sugestão de referência operacional:
-
-```bash
-claude plugin marketplace add protheus-qa-marketplace https://github.com/danielmontagna86-source/claude-skill-protheus-qa
-claude plugin install protheus-qa
-```
-
-Se sua versão do Claude Code usar comandos interativos, use o menu/comando de plugins para adicionar este repositório como marketplace ou fonte de plugin.
-
-## Submissão ao marketplace oficial
-
-Este repositório já contém os arquivos técnicos necessários para distribuição como plugin:
-
-```text
-.claude-plugin/plugin.json
-.claude-plugin/marketplace.json
-SKILL.md
-```
-
-Para aparecer no marketplace oficial da Anthropic/Claude Code, ainda é necessário passar pelo processo oficial de submissão/revisão da Anthropic. Esse processo não é feito automaticamente por este repositório.
-
-## Teste rápido após instalação
-
-Use um prompt como:
-
-```text
-Monte testes para MATA120 com validação de centro de custo obrigatório.
-```
-
-A resposta esperada deve incluir plano de QA, cenários positivos, negativos, regressão, massa de dados, técnica recomendada, evidência e limitações.
+Referências oficiais consultadas em 01/10/2026:
+- https://code.claude.com/docs/en/plugin-marketplaces
+- https://code.claude.com/docs/en/discover-plugins

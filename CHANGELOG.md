@@ -2,6 +2,14 @@
 
 Todas as mudanças relevantes deste projeto serão registradas aqui.
 
+## 0.2.0-rc.2 - 2026-10-01
+
+### Fixed
+
+- Guia legado de marketplace atualizado: versão consultada em VERSION, origem GitHub tipada e comandos com identificação do marketplace.
+- Exemplos de instalação separados de validação efetivamente executada.
+- Correção documental; motor TIR e seus limites permanecem iguais aos da rc.1.
+
 ## 0.2.0-rc.1 - 2026-10-01
 
 ### Added
