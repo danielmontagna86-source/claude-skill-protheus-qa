@@ -1,8 +1,19 @@
 # Protheus QA — testing-protheus-routines
 
-**Daniel Montagna / Protheus IA Lab · versão 0.2.0-rc.3**
+**Daniel Montagna / Protheus IA Lab · versão 0.2.0-rc.4**
 
 Skill para planejar e revisar testes de rotinas e customizações TOTVS Protheus, com TDN, ADVPL/TLPP, PROBAT, ExecAuto/FwModel e TIR. Mantém o nome `testing-protheus-routines` e o contrato original de 13 itens do [SKILL.md](SKILL.md).
+
+## Comece aqui
+
+| Preciso de... | Procedimento |
+|---|---|
+| Instalar manualmente no meu projeto | [INSTALL.md — Windows, Claude Code, Codex e validação](INSTALL.md) |
+| Pedir à IA para instalar | [INSTALL_WITH_AI.md — prompt pronto e limites](INSTALL_WITH_AI.md) |
+| Usar a skill com IA no trabalho | [USAGE_WITH_AI.md — primeiro uso e prompts por tarefa](USAGE_WITH_AI.md) |
+| Preparar execução TIR autorizada | [TIR_QUICKSTART.md — runtime e operação de consulta](TIR_QUICKSTART.md) |
+
+A instalação básica copia a skill; **não exige TIR e não acessa o ERP**. Os guias também acompanham o ZIP instalável. A rc.4 atualiza o onboarding e sua validação; não amplia o executor nem elimina os riscos identificados na rc.3.
 
 ## O que esta versão entrega
 
@@ -10,7 +21,7 @@ A especialização TIR 2.14.10 acrescenta seis comandos: inspeção de fontes se
 
 **Testes offline e publicação não equivalem a homologação no ERP.** Não houve validação funcional em uma instalação Protheus nesta entrega. Os testes com helper simulado registram `execution_mode=simulated` e `erp_validated=false`.
 
-Comece pelo **[guia prático Windows e operação](TIR_QUICKSTART.md)**. Consulte [limites de segurança](SECURITY.md), [baseline TIR](references/tir/baseline-2.14.10.md), [notas da versão](RELEASE_NOTES/v0.2.0-rc.3.md) e [avaliações comportamentais pendentes](evals/tir-behavioral.md).
+Para preparar uma execução autorizada, consulte o **[guia prático Windows e operação](TIR_QUICKSTART.md)**. Consulte [limites de segurança](SECURITY.md), [baseline TIR](references/tir/baseline-2.14.10.md), [notas da versão](RELEASE_NOTES/v0.2.0-rc.4.md) e [avaliações comportamentais pendentes](evals/tir-behavioral.md).
 
 ## Segunda revisão técnica
 
@@ -20,15 +31,9 @@ A rc.3 acrescenta validação de PNG e observações, encerramento em interrupç
 
 ## Instalação por projeto
 
-Claude Code, a partir do projeto:
+Use o pacote da release `v0.2.0-rc.4`, conferindo `SHA256SUMS.txt`, e siga [INSTALL.md](INSTALL.md). A pasta final é `.claude/skills/testing-protheus-routines` para Claude Code ou `.agents/skills/testing-protheus-routines` para Codex. O guia interrompe a instalação se o destino já existir e evita repositórios Git aninhados.
 
-```powershell
-git clone https://github.com/danielmontagna86-source/claude-skill-protheus-qa.git .claude/skills/testing-protheus-routines
-```
-
-Para Codex, use `.agents/skills/testing-protheus-routines` como destino. Não mantenha cópias divergentes com o mesmo nome dentro do mesmo agente. Para uma instalação já existente, revise e atualize o clone; não clone outra skill por cima.
-
-A instalação da skill não instala Python, TIR, navegador, driver ou um ambiente Protheus. O ZIP oficial possui a pasta raiz `testing-protheus-routines/`, inventário SHA-256 interno e checksum externo. A tag desta pré-release é `v0.2.0-rc.3` quando a publicação do workflow concluir.
+Para instalação assistida, copie o prompt de [INSTALL_WITH_AI.md](INSTALL_WITH_AI.md) no agente aberto no projeto. Sem acesso à máquina, a IA apenas orienta; não declare instalação local a partir de uma resposta textual.
 
 ## Uso da skill
 
@@ -81,6 +86,6 @@ Deploy de Protheus, atualização de RPO, patches, reinício de serviços, admin
 
 ## Documentação
 
-[Instalação original](INSTALL.md) · [Uso e cenários](USAGE.md) · [Guia TIR](TIR_QUICKSTART.md) · [Changelog](CHANGELOG.md) · [Segurança](SECURITY.md) · [Licença MIT](LICENSE).
+[Instalação](INSTALL.md) · [Instalação com IA](INSTALL_WITH_AI.md) · [Uso com IA](USAGE_WITH_AI.md) · [Uso e cenários](USAGE.md) · [Guia TIR](TIR_QUICKSTART.md) · [Changelog](CHANGELOG.md) · [Segurança](SECURITY.md) · [Licença MIT](LICENSE).
 
 O marketplace é próprio; a publicação neste GitHub não significa inclusão no catálogo oficial da Anthropic nem homologação pela TOTVS.
