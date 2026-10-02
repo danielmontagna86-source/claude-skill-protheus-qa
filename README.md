@@ -1,6 +1,6 @@
 # Protheus QA — testing-protheus-routines
 
-**Daniel Montagna / Protheus IA Lab · versão 0.2.0-rc.2**
+**Daniel Montagna / Protheus IA Lab · versão 0.2.0-rc.3**
 
 Skill para planejar e revisar testes de rotinas e customizações TOTVS Protheus, com TDN, ADVPL/TLPP, PROBAT, ExecAuto/FwModel e TIR. Mantém o nome `testing-protheus-routines` e o contrato original de 13 itens do [SKILL.md](SKILL.md).
 
@@ -10,7 +10,13 @@ A especialização TIR 2.14.10 acrescenta seis comandos: inspeção de fontes se
 
 **Testes offline e publicação não equivalem a homologação no ERP.** Não houve validação funcional em uma instalação Protheus nesta entrega. Os testes com helper simulado registram `execution_mode=simulated` e `erp_validated=false`.
 
-Comece pelo **[guia prático Windows e operação](TIR_QUICKSTART.md)**. Consulte [limites de segurança](SECURITY.md), [baseline TIR](references/tir/baseline-2.14.10.md), [notas da versão](RELEASE_NOTES/v0.2.0-rc.2.md) e [avaliações comportamentais pendentes](evals/tir-behavioral.md).
+Comece pelo **[guia prático Windows e operação](TIR_QUICKSTART.md)**. Consulte [limites de segurança](SECURITY.md), [baseline TIR](references/tir/baseline-2.14.10.md), [notas da versão](RELEASE_NOTES/v0.2.0-rc.3.md) e [avaliações comportamentais pendentes](evals/tir-behavioral.md).
+
+## Segunda revisão técnica
+
+A rc.3 acrescenta validação de PNG e observações, encerramento em interrupções, relatório de falha de limpeza, snapshot da aprovação e reprodução binária do pacote entre Windows/Linux. Veja o [code review e fontes primárias](references/tir/review-2026-10-01.md).
+
+**Dependências: não há aprovação de segurança para o runtime.** O TIR fixado inclui bibliotecas com avisos conhecidos, incluindo Requests 2.31.0. A publicação anexa auditoria e inventário; sucesso dos testes não elimina esses riscos. A política exige `dependency_risks_reviewed=true` do responsável autorizado antes de uma execução real. Isso é uma declaração de revisão, não assinatura digital ou correção de CVEs.
 
 ## Instalação por projeto
 
@@ -22,7 +28,7 @@ git clone https://github.com/danielmontagna86-source/claude-skill-protheus-qa.gi
 
 Para Codex, use `.agents/skills/testing-protheus-routines` como destino. Não mantenha cópias divergentes com o mesmo nome dentro do mesmo agente. Para uma instalação já existente, revise e atualize o clone; não clone outra skill por cima.
 
-A instalação da skill não instala Python, TIR, navegador, driver ou um ambiente Protheus. O ZIP oficial possui a pasta raiz `testing-protheus-routines/`, inventário SHA-256 interno e checksum externo. A tag desta pré-release é `v0.2.0-rc.2` quando a publicação do workflow concluir.
+A instalação da skill não instala Python, TIR, navegador, driver ou um ambiente Protheus. O ZIP oficial possui a pasta raiz `testing-protheus-routines/`, inventário SHA-256 interno e checksum externo. A tag desta pré-release é `v0.2.0-rc.3` quando a publicação do workflow concluir.
 
 ## Uso da skill
 
@@ -65,7 +71,7 @@ python scripts/verify_tir_api.py --fetch
 python scripts/package_skill.py
 ```
 
-A automação GitHub testa as ferramentas em Python 3.12 no Windows e no Linux, confere a API pública contra um blob fixado e somente então permite publicação. Seus resultados devem ser lidos no run correspondente; a existência do workflow não significa que ele passou.
+A automação GitHub testa o checkout e o ZIP em Python 3.12 no Windows e no Linux, compara os pacotes byte a byte, confere a API e faz uma instalação/importação isolada do TIR com auditoria de dependências. Após publicar, baixa os assets novamente e verifica os bytes e o commit. A auditoria pode concluir com vulnerabilidades encontradas; esse status é publicado, não convertido em aprovação de segurança. Seus resultados devem ser lidos no run correspondente; a existência do workflow não significa que ele passou.
 
 O pacote é criado em `dist/testing-protheus-routines.zip`. `dist/SHA256SUMS.txt` contém o checksum. Dados de execução, configuração com credenciais e evidências não pertencem à distribuição.
 

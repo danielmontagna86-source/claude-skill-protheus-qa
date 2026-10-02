@@ -53,6 +53,9 @@ O bundle contém `case.json`, `profile.json`, `test_case.py` e `manifest.json`. 
 
 ## 4. Autorização externa
 
+A rc.3 exige também `dependency_risks_reviewed=true`, após revisão da auditoria pelo responsável autorizado. O padrão é false. A baseline inclui dependências com avisos conhecidos; não altere essa confirmação por conveniência e não atualize dependências isoladamente sem nova baseline/regressão.
+
+
 Um operador autorizado deve completar `templates/tir/approval.example.json`, fora do clone e do bundle, sob controle de acesso do sistema operacional. O agente não deve aprovar seu próprio trabalho.
 
 A autorização fixa URL, ambiente, grupo, filial, hash do bundle, hash do motor exibido no preflight, aprovador, validade com timezone (até 24 horas), botões de navegação aprovados e limite total de execução. Também registra confirmação de isolamento das integrações e menor privilégio. Essas duas confirmações são declarações do operador, não verificações automáticas da rede.
@@ -89,7 +92,7 @@ Códigos: `0` para comando concluído conforme seu estágio; `1` para execução
 
 A execução PASS exige um caso executado, todas as verificações previstas, identidade confirmada, sem falhas/erros/skips, screenshot não vazio e encerramento da sessão. O resultado identifica execução real ou simulada. Uma falha permanece no run original; use novo diretório/run para uma repetição posteriormente autorizada.
 
-`result.json`, `case.json`, `profile.json`, logs e screenshots ficam restritos localmente. `evidence-manifest.json` registra integridade por SHA-256, não autenticidade criptográfica. A coleta posterior confere os hashes e rejeita alteração, arquivos extras ou symlinks. Console tem mascaramento literal de credenciais; imagens e logs nativos devem ser revisados/sanitizados antes de qualquer compartilhamento.
+`result.json`, `case.json`, `profile.json`, logs e screenshots ficam restritos localmente. A rc.3 confere observações contra o caso, conta os arquivos PNG e valida sua estrutura/CRC; isso não autentica o conteúdo visual. O hash da autorização usa JSON canônico (`approval_hash_scope=canonical_json`), preservando a decisão anterior à execução. Interrupção encerra a árvore própria; falha de limpeza gera ERROR e quarentena, nunca PASS. `evidence-manifest.json` registra integridade por SHA-256, não autenticidade criptográfica. A coleta posterior confere os hashes e rejeita alteração, arquivos extras ou symlinks. Console tem mascaramento literal de credenciais; imagens e logs nativos devem ser revisados/sanitizados antes de qualquer compartilhamento.
 
 ## 7. Liberação e limites
 

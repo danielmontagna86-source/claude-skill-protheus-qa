@@ -17,6 +17,14 @@ def validate(root: Path | None = None) -> list[str]:
         marketplace = json.loads((root / ".claude-plugin/marketplace.json").read_text(encoding="utf-8"))
         if plugin["version"] != version: errors.append("Plugin version drift")
         if marketplace["plugins"][0]["version"] != version: errors.append("Marketplace version drift")
+        source = marketplace["plugins"][0].get("source")
+        if not isinstance(source, dict) or source.get("source") != "github": errors.append("Marketplace source must be typed GitHub object")
+        guide = (root / "MARKETPLACE.md").read_text(encoding="utf-8")
+        if "Versão: consultar [VERSION]" not in guide: errors.append("Marketplace guide must reference VERSION")
+        profile = json.loads((root / "templates/tir/profile.example.json").read_text(encoding="utf-8"))
+        approval = json.loads((root / "templates/tir/approval.example.json").read_text(encoding="utf-8"))
+        if profile["enabled"] is not False or approval.get("dependency_risks_reviewed") is not False:
+            errors.append("Public execution/risk-review templates must remain disabled")
         for path in ("CHANGELOG.md", "README.md"):
             if version not in (root / path).read_text(encoding="utf-8"): errors.append("Missing version: " + path)
         if not (root / f"RELEASE_NOTES/v{version}.md").is_file(): errors.append("Missing release notes")

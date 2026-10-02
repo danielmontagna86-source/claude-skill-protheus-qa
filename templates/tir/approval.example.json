@@ -2,6 +2,7 @@
   "allowed_buttons": [],
   "approved_by": "PREENCHER",
   "bundle_sha256": "PREENCHER",
+  "dependency_risks_reviewed": false,
   "engine_sha256": "PREENCHER",
   "environment_kind": "homologation",
   "expires_at": "2026-01-01T00:00:00Z",

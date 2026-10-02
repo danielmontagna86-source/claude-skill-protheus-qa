@@ -20,6 +20,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 import tirqa_core as core
 import tirqa_runner as runner
 from tirqa_cli import main
+from qa_test_fixtures import png_bytes
 
 
 def profile():
@@ -53,7 +54,7 @@ def policy(manifest, p=None):
             "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=10)).isoformat(),
             "bundle_sha256": manifest["bundle_sha256"], "engine_sha256": core.engine_hash(),
             "allowed_buttons": ["Visualizar"], "integrations_blocked": True,
-            "least_privilege_confirmed": True, "max_seconds": 30}
+            "least_privilege_confirmed": True, "max_seconds": 30, "dependency_risks_reviewed": True}
 
 
 class FakeHelper:
@@ -78,7 +79,7 @@ class FakeHelper:
     def Screenshot(self, filename):
         self.calls.append("Screenshot")
         if self.image:
-            (self.screenshot_dir / (filename + ".png")).write_bytes(b"SYNTHETIC_IMAGE_NOT_ERP")
+            (self.screenshot_dir / (filename + ".png")).write_bytes(png_bytes())
     def TearDown(self):
         self.calls.append("TearDown")
         if self.teardown_error:

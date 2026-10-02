@@ -1,14 +1,11 @@
 name: Validate and package Protheus QA Skill
-
 on:
   push:
     branches: [main]
   pull_request:
   workflow_dispatch:
-
 permissions:
   contents: read
-
 jobs:
   validate-and-package:
     name: Python 3.12 / ${{ matrix.os }}
@@ -19,26 +16,28 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
-      - name: Checkout exact revision
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
-      - name: Python 3.12
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: '3.12'
-      - name: Offline deterministic tests - no TIR or ERP
-        run: python -m unittest discover -s tests -v
-      - name: Preserve original skill contract
-        run: python scripts/validate_skill.py
-      - name: Validate release consistency
-        run: python scripts/validate_tir_release.py
-      - name: Verify pinned official TIR API - source only
+      - name: Offline source tests - no ERP
+        run: python scripts/run_local_checks.py --output artifacts/source-tests.json
+      - name: Preserve contract and release consistency
+        run: |
+          python scripts/validate_skill.py
+          python scripts/validate_tir_release.py
+      - name: Verify pinned official TIR source
         run: python scripts/verify_tir_api.py --fetch
-      - name: Build reproducible package
-        run: python scripts/package_skill.py
+      - name: Package and inspect every entry
+        run: |
+          python scripts/package_skill.py
+          python scripts/verify_distribution.py --zip dist/testing-protheus-routines.zip --output artifacts/package-check.json
+      - name: Repeat tests from the distribution itself
+        run: python scripts/test_packaged_skill.py --zip dist/testing-protheus-routines.zip --output artifacts/packaged-tests.json
       - name: Save validated package
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
           name: testing-protheus-routines-${{ matrix.os }}
           path: |
@@ -46,40 +45,112 @@ jobs:
             dist/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 14
+      - name: Save test reports
+        if: always()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        with:
+          name: qa-tests-${{ matrix.os }}
+          path: artifacts/*.json
+          if-no-files-found: error
+          retention-days: 14
+
+  compare-packages:
+    name: Require identical Windows and Linux ZIPs
+    needs: [validate-and-package]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        with:
+          name: testing-protheus-routines-ubuntu-latest
+          path: artifacts/linux
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        with:
+          name: testing-protheus-routines-windows-latest
+          path: artifacts/windows
+      - name: Byte-for-byte comparison, not only matching filenames
+        run: python scripts/verify_distribution.py --zip artifacts/linux/testing-protheus-routines.zip --compare artifacts/windows/testing-protheus-routines.zip --output artifacts/cross-platform.json
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        with:
+          name: distribution-review
+          path: artifacts/cross-platform.json
+          if-no-files-found: error
+
+  runtime-audit:
+    name: Install/import TIR and report dependency risks - not security approval
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
+        with:
+          python-version: '3.12'
+      - name: Isolated runtime probe and separate auditor environment
+        run: python scripts/audit_tir_runtime.py --install-and-audit --work-dir "${{ runner.temp }}/tir-qa-audit" --output-dir artifacts/dependency-review
+      - name: Keep findings visible even when execution is not approved
+        if: always()
+        uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        with:
+          name: dependency-review
+          path: artifacts/dependency-review
+          if-no-files-found: error
+          retention-days: 30
 
   publish-prerelease:
-    name: Publish skill prerelease
+    name: Publish and read back verified prerelease assets
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
-    needs: [validate-and-package]
+    needs: [compare-packages, runtime-audit]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
       contents: write
     steps:
-      - name: Checkout validated revision
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           persist-credentials: false
-      - name: Python 3.12
-        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1
         with:
           python-version: '3.12'
-      - name: Package validated source
-        run: python scripts/package_skill.py
-      - name: Publish without replacing an existing release
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        with:
+          name: testing-protheus-routines-ubuntu-latest
+          path: dist
+      - uses: actions/download-artifact@018cc2cf5baa6db3ef3c5f8a56943fffe632ef53
+        with:
+          name: dependency-review
+          path: artifacts/dependency-review
+      - name: Publish candidate without overwriting prior assets
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           version="$(tr -d '\r\n' < VERSION)"
-          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]] || { echo "Only explicit release candidates are automated"; exit 1; }
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]] || exit 1
           tag="v${version}"
-          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            echo "Release exists; assets will not be overwritten."
-            exit 0
+          if ! gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$tag" dist/testing-protheus-routines.zip dist/SHA256SUMS.txt artifacts/dependency-review/* \
+              --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --title "Protheus QA ${version} - TIR 2.14.10" \
+              --notes-file "RELEASE_NOTES/${tag}.md" --prerelease --latest=false
           fi
-          gh release create "$tag" dist/testing-protheus-routines.zip dist/SHA256SUMS.txt \
-            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
-            --title "Protheus QA ${version} - TIR 2.14.10" \
-            --notes-file "RELEASE_NOTES/${tag}.md" --prerelease --latest=false
+      - name: Download published assets again and verify exact revision and bytes
+        shell: bash
+        run: |
+          version="$(tr -d '\r\n' < VERSION)"
+          python scripts/verify_release_assets.py --repo "$GITHUB_REPOSITORY" --tag "v${version}" --commit "$GITHUB_SHA" \
+            --files dist/testing-protheus-routines.zip dist/SHA256SUMS.txt artifacts/dependency-review/* \
+            --output artifacts/publication-verification.json
+      - uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
+        with:
+          name: publication-verification
+          path: artifacts/publication-verification.json
+          if-no-files-found: error

@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlsplit
 
+ENGINE_FILES = ("tirqa_core.py", "tirqa_evidence.py", "tirqa_runner.py")
 TIR_VERSION = "2.14.10"
 TIR_COMMIT = "dbc12e7a0563174a3f6c16832046229d71d464cf"
 # Deliberately supported PUBLIC subset, not the whole TIR API.
@@ -56,13 +57,31 @@ def _pairs(pairs: list) -> dict:
     return result
 
 
-def load_json(path: Path) -> dict:
-    require(not path.is_symlink() and path.is_file(), "regular_file_required")
-    require(path.stat().st_size <= 2_000_000, "json_too_large")
-    data = json.loads(path.read_text(encoding="utf-8"), object_pairs_hook=_pairs,
-                      parse_constant=lambda _: (_ for _ in ()).throw(Blocked("nonfinite_json")))
+def is_link(path: Path) -> bool:
+    return path.is_symlink() or bool(getattr(path, "is_junction", lambda: False)())
+
+
+def parse_json(raw: bytes) -> dict:
+    require(len(raw) <= 2_000_000, "json_too_large")
+    try:
+        data = json.loads(raw.decode("utf-8"), object_pairs_hook=_pairs,
+                          parse_constant=lambda _: (_ for _ in ()).throw(Blocked("nonfinite_json")))
+    except RecursionError:
+        raise Blocked("json_too_deep") from None
     require(isinstance(data, dict), "json_object_required")
+    pending, nodes = [(data, 0)], 0
+    while pending:
+        item, depth = pending.pop(); nodes += 1
+        require(depth <= 64 and nodes <= 100000, "json_too_deep_or_complex")
+        if isinstance(item, dict): pending.extend((v, depth + 1) for v in item.values())
+        elif isinstance(item, list): pending.extend((v, depth + 1) for v in item)
     return data
+
+
+def load_json(path: Path) -> dict:
+    require(not is_link(path) and path.is_file(), "regular_file_required")
+    require(path.stat().st_size <= 2_000_000, "json_too_large")
+    return parse_json(path.read_bytes())
 
 
 def encoded(data: object) -> bytes:
@@ -115,7 +134,9 @@ def validate_profile(profile: dict, execution: bool = False) -> None:
                CONFIG_KEYS - {"Url", "Environment", "Browser", "Language", "TimeOut"})
     require(all(text(config[k]) for k in ("Url", "Environment", "Browser", "Language")),
             "invalid_config_text")
+    require(not any(ch.isspace() or ord(ch) < 32 or ord(ch) == 127 for ch in config["Url"]), "url_control_character")
     url = urlsplit(config["Url"])
+    _ = url.port  # validate a malformed or out-of-range port before any process starts
     require(url.scheme == "https" and bool(url.hostname) and not url.username
             and not url.password and not url.query and not url.fragment, "unsafe_url")
     require(not url.hostname.endswith((".invalid", ".example")), "placeholder_url")
@@ -253,22 +274,21 @@ def generate(case: dict, profile: dict, destination: Path) -> dict:
 
 
 def verify_bundle(directory: Path) -> tuple[dict, dict, dict]:
-    require(not directory.is_symlink(), "symlink_bundle")
+    require(not is_link(directory), "symlink_bundle")
     case, profile = load_json(directory / "case.json"), load_json(directory / "profile.json")
     expected = bundle_files(case, profile)
     for name, content in expected.items():
         path = directory / name
-        require(not path.is_symlink() and path.is_file(), "bundle_file_missing")
+        require(not is_link(path) and path.is_file(), "bundle_file_missing")
         require(path.read_bytes() == content, "bundle_tampered")
     manifest = load_json(directory / "manifest.json")
     require(manifest == bundle_manifest(expected), "manifest_tampered")
     return case, profile, manifest
 
 
-def engine_hash() -> str:
-    root = Path(__file__).resolve().parent
-    return digest(encoded({name: digest((root / name).read_bytes())
-                           for name in ("tirqa_core.py", "tirqa_runner.py")}))
+def engine_hash(directory: Path | None = None) -> str:
+    root = directory or Path(__file__).resolve().parent
+    return digest(encoded({name: digest((root / name).read_bytes()) for name in ENGINE_FILES}))
 
 
 def preflight(profile: dict) -> dict:
@@ -282,14 +302,16 @@ def preflight(profile: dict) -> dict:
     return {"status": "READY_FOR_AUTHORIZATION" if all(checks.values()) else "BLOCKED",
             "checks": checks, "python": sys.version.split()[0], "tir_installed": installed,
             "network_checked": False, "browser_started": False, "erp_validated": False,
-            "engine_sha256": engine_hash()}
+            "engine_sha256": engine_hash(),
+            "dependency_security": "REVIEW_REQUIRED_NOT_A_CLEAN_AUDIT",
+            "dependency_note": "The pinned TIR runtime includes requests 2.31.0 with known advisories."}
 
 
 def approve(policy: dict, case: dict, profile: dict, manifest: dict,
             now: datetime | None = None) -> None:
     exact_keys(policy, {"schema_version", "environment_kind", "target", "approved_by",
                         "expires_at", "bundle_sha256", "engine_sha256", "allowed_buttons",
-                        "integrations_blocked", "least_privilege_confirmed", "max_seconds"})
+                        "integrations_blocked", "least_privilege_confirmed", "max_seconds", "dependency_risks_reviewed"})
     require(type(policy["schema_version"]) is int and policy["schema_version"] == 1, "unsupported_policy")
     require(policy["environment_kind"] == "homologation", "policy_not_homologation")
     target = {"Url": profile["config"]["Url"], "Environment": profile["config"]["Environment"],
@@ -297,6 +319,7 @@ def approve(policy: dict, case: dict, profile: dict, manifest: dict,
     require(policy["target"] == target, "target_mismatch")
     require(policy["bundle_sha256"] == manifest["bundle_sha256"], "unapproved_bundle")
     require(policy["engine_sha256"] == engine_hash(), "unapproved_engine")
+    require(policy["dependency_risks_reviewed"] is True, "dependency_risk_review_required")
     require(text(policy["approved_by"]), "approver_required")
     expiry = datetime.fromisoformat(policy["expires_at"].replace("Z", "+00:00"))
     require(expiry.tzinfo is not None, "timezone_required")
@@ -319,7 +342,7 @@ def inspect_sources(paths: list[Path], encoding: str) -> list[dict]:
     require(encoding in {"utf-8", "utf-8-sig", "cp1252"}, "explicit_supported_encoding_required")
     result = []
     for path in paths:
-        require(path.is_file() and not path.is_symlink(), "regular_source_required")
+        require(path.is_file() and not is_link(path), "regular_source_required")
         require(path.stat().st_size <= 10_000_000, "source_too_large")
         original = path.read_bytes()
         source = original.decode(encoding, errors="strict")
