@@ -1,6 +1,6 @@
 # Protheus QA — testing-protheus-routines
 
-**Daniel Montagna / Protheus IA Lab · versão 0.2.0-rc.1**
+**Daniel Montagna / Protheus IA Lab · versão 0.2.0-rc.2**
 
 Skill para planejar e revisar testes de rotinas e customizações TOTVS Protheus, com TDN, ADVPL/TLPP, PROBAT, ExecAuto/FwModel e TIR. Mantém o nome `testing-protheus-routines` e o contrato original de 13 itens do [SKILL.md](SKILL.md).
 
@@ -10,7 +10,7 @@ A especialização TIR 2.14.10 acrescenta seis comandos: inspeção de fontes se
 
 **Testes offline e publicação não equivalem a homologação no ERP.** Não houve validação funcional em uma instalação Protheus nesta entrega. Os testes com helper simulado registram `execution_mode=simulated` e `erp_validated=false`.
 
-Comece pelo **[guia prático Windows e operação](TIR_QUICKSTART.md)**. Consulte [limites de segurança](SECURITY.md), [baseline TIR](references/tir/baseline-2.14.10.md), [notas da versão](RELEASE_NOTES/v0.2.0-rc.1.md) e [avaliações comportamentais pendentes](evals/tir-behavioral.md).
+Comece pelo **[guia prático Windows e operação](TIR_QUICKSTART.md)**. Consulte [limites de segurança](SECURITY.md), [baseline TIR](references/tir/baseline-2.14.10.md), [notas da versão](RELEASE_NOTES/v0.2.0-rc.2.md) e [avaliações comportamentais pendentes](evals/tir-behavioral.md).
 
 ## Instalação por projeto
 
@@ -22,7 +22,7 @@ git clone https://github.com/danielmontagna86-source/claude-skill-protheus-qa.gi
 
 Para Codex, use `.agents/skills/testing-protheus-routines` como destino. Não mantenha cópias divergentes com o mesmo nome dentro do mesmo agente. Para uma instalação já existente, revise e atualize o clone; não clone outra skill por cima.
 
-A instalação da skill não instala Python, TIR, navegador, driver ou um ambiente Protheus. O ZIP oficial possui a pasta raiz `testing-protheus-routines/`, inventário SHA-256 interno e checksum externo. A tag desta pré-release é `v0.2.0-rc.1` quando a publicação do workflow concluir.
+A instalação da skill não instala Python, TIR, navegador, driver ou um ambiente Protheus. O ZIP oficial possui a pasta raiz `testing-protheus-routines/`, inventário SHA-256 interno e checksum externo. A tag desta pré-release é `v0.2.0-rc.2` quando a publicação do workflow concluir.
 
 ## Uso da skill
 
