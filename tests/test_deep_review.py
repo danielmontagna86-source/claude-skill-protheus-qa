@@ -184,7 +184,9 @@ class OwnedProcessReviewTests(unittest.TestCase):
                         subprocess.run(['taskkill','/PID',str(pid),'/T','/F'],capture_output=True,timeout=10,check=False)
                 else:
                     try:os.killpg(proc.pid,signal.SIGKILL)
-                    except ProcessLookupError:pass
+                    except ProcessLookupError:
+                        # The disposable process group was already stopped by the test.
+                        pass
                 proc.wait(timeout=10)
 
 

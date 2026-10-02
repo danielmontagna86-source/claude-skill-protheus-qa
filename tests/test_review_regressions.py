@@ -1,12 +1,9 @@
 """Second-pass review controls. Synthetic data; no ERP or credentials are used."""
-import copy
 import io
 import os
-import struct
 import sys
 import tempfile
 import unittest
-import zlib
 from pathlib import Path
 from unittest.mock import patch
 

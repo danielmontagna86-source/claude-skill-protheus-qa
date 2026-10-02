@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import csv
 import io
-import json
 import os
 import re
 import shutil
@@ -17,7 +16,7 @@ from pathlib import Path
 
 # Support an isolated (-I) worker without consulting cwd or PYTHONPATH.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from tirqa_core import (ASSERTIONS, CONTRACT, ENGINE_FILES, Blocked, TIR_VERSION, approve,
+from tirqa_core import (ASSERTIONS, ENGINE_FILES, Blocked, TIR_VERSION, approve,
                         bundle_files, digest, encoded, engine_hash, load_json,
                         preflight, require, validate_profile, verify_bundle, write_json, is_link)
 from tirqa_evidence import artifact_hashes, screenshots, validate_success
@@ -183,15 +182,18 @@ def stop_tree(process: subprocess.Popen) -> None:
         try:
             os.killpg(process.pid, signal.SIGTERM)
         except ProcessLookupError:
+            # The owned group is already gone; no unrelated process is targeted.
             pass
         try:
             process.wait(timeout=3)
         except subprocess.TimeoutExpired:
+            # The grace period expired; the group receives SIGKILL below.
             pass
         # The leader may have exited promptly while its descendants stayed alive.
         try:
             os.killpg(process.pid, signal.SIGKILL)
         except ProcessLookupError:
+            # The owned group is already gone; no unrelated process is targeted.
             pass
     try:
         process.wait(timeout=10)
