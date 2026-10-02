@@ -17,9 +17,10 @@ from pathlib import Path
 
 # Support an isolated (-I) worker without consulting cwd or PYTHONPATH.
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from tirqa_core import (ASSERTIONS, CONTRACT, Blocked, TIR_VERSION, approve,
+from tirqa_core import (ASSERTIONS, CONTRACT, ENGINE_FILES, Blocked, TIR_VERSION, approve,
                         bundle_files, digest, encoded, engine_hash, load_json,
-                        preflight, require, validate_profile, verify_bundle, write_json)
+                        preflight, require, validate_profile, verify_bundle, write_json, is_link)
+from tirqa_evidence import artifact_hashes, screenshots, validate_success
 
 
 def utc() -> str:
@@ -140,9 +141,7 @@ def run_worker(directory: Path, factory=None) -> int:
     test = test_type("test_case")
     started = utc()
     result = unittest.TextTestRunner(stream=io.StringIO(), verbosity=0).run(unittest.TestSuite([test]))
-    screenshots = [p for p in Path(runtime["screenshots"]).rglob("*")
-                   if p.is_file() and not p.is_symlink() and p.suffix.lower() in {".png", ".jpg"}
-                   and p.stat().st_size > 0]
+    image_files = screenshots(Path(runtime["screenshots"]))
     expected_checks = sum(s["method"] in ASSERTIONS for s in case["steps"])
     checks = getattr(test, "business_checks", 0)
     cleanup = getattr(test, "cleanup_status", "NOT_STARTED")
@@ -150,7 +149,7 @@ def run_worker(directory: Path, factory=None) -> int:
     counts = {"tests": result.testsRun, "failures": len(result.failures),
               "errors": len(result.errors), "skipped": len(result.skipped)}
     complete = (counts == {"tests": 1, "failures": 0, "errors": 0, "skipped": 0}
-                and checks == expected_checks and expected_checks > 0 and bool(screenshots)
+                and checks == expected_checks and expected_checks > 0 and bool(image_files)
                 and cleanup == "SESSION_CLOSED" and len(identity) == 4
                 and all(i["observed"] is True for i in identity))
     status = "PASS" if complete else ("ERROR" if result.errors else "FAIL")
@@ -159,7 +158,7 @@ def run_worker(directory: Path, factory=None) -> int:
     payload = {"schema_version": 1, "case_id": case["case_id"], "status": status,
                "counts": counts, "checks_expected": expected_checks, "checks_passed": checks,
                "identity": identity, "observations": getattr(test, "observations", []),
-               "cleanup": cleanup, "screenshots": len(screenshots), "started_at": started,
+               "cleanup": cleanup, "screenshots": len(image_files), "started_at": started,
                "finished_at": utc(), "erp_validated": complete and not simulated,
                "execution_mode": "simulated" if simulated else "live",
                "test_engine": "unittest", "tir_version": TIR_VERSION}
@@ -188,7 +187,7 @@ def stop_tree(process: subprocess.Popen) -> None:
 
 def execute(bundle: Path, policy_path: Path, output: Path) -> dict:
     case, profile, manifest = verify_bundle(bundle)
-    require(not output.is_symlink(), "symlink_output")
+    require(not is_link(output), "symlink_output")
     output = output.resolve()
     validate_profile(profile, execution=True)
     root = Path(__file__).resolve().parents[1]
@@ -199,6 +198,7 @@ def execute(bundle: Path, policy_path: Path, output: Path) -> dict:
         require(policy_path.stat().st_mode & 0o022 == 0, "policy_must_not_be_group_world_writable")
     policy = load_json(policy_path)
     approve(policy, case, profile, manifest)
+    approval_sha256 = digest(encoded(policy))
     require(preflight(profile)["status"] == "READY_FOR_AUTHORIZATION", "runtime_not_ready")
     username, password = os.environ.get("TIR_USER", ""), os.environ.get("TIR_PASSWORD", "")
     require(bool(username) and bool(password), "credentials_missing")
@@ -214,10 +214,9 @@ def execute(bundle: Path, policy_path: Path, output: Path) -> dict:
     engine = private / "engine"
     engine.mkdir()
     source_dir = Path(__file__).resolve().parent
-    for name in ("tirqa_core.py", "tirqa_runner.py"):
+    for name in ENGINE_FILES:
         (engine / name).write_bytes((source_dir / name).read_bytes())
-    snapshot_hash = digest(encoded({n: digest((engine / n).read_bytes())
-                                   for n in ("tirqa_core.py", "tirqa_runner.py")}))
+    snapshot_hash = engine_hash(engine)
     require(snapshot_hash == policy["engine_sha256"], "engine_changed_during_snapshot")
     (output / "screenshots").mkdir()
     (output / "logs").mkdir()
@@ -262,58 +261,72 @@ def execute(bundle: Path, policy_path: Path, output: Path) -> dict:
                 payload.update(status="ERROR", reason="worker_exit_inconsistent")
         require(code != 0 or payload.get("status") == "PASS", "worker_success_without_evidence")
         payload["exit_code"] = code
-    except Exception as exc:
-        if process is not None and process.poll() is None:
-            stop_tree(process)
+    except (Exception, KeyboardInterrupt) as exc:
         payload.update(status="ERROR", erp_validated=False, reason=type(exc).__name__)
+        if isinstance(exc, KeyboardInterrupt):
+            payload["exit_code"] = 130
+        try:
+            if process is not None and process.poll() is None:
+                stop_tree(process)
+        except Exception:
+            payload["owned_process_cleanup"] = "FAILED_REQUIRES_OPERATOR"
     finally:
-        # Console is quarantined, size-limited and redacted before it becomes an artifact.
-        raw = private / "console.raw"
-        if raw.exists() and raw.stat().st_size <= 20_000_000:
-            content = scrub(raw.read_text(encoding="utf-8", errors="replace"), secrets)
-            (output / "console.txt").write_text(content, encoding="utf-8")
-        # Delete only the private directory created by this run; not the user's workspace.
-        shutil.rmtree(private)
+        # Always attempt private cleanup, even if reading/redacting the console fails.
+        try:
+            raw = private / "console.raw"
+            if raw.exists() and raw.stat().st_size <= 20_000_000:
+                content = scrub(raw.read_text(encoding="utf-8", errors="replace"), secrets)
+                (output / "console.txt").write_text(content, encoding="utf-8")
+        except OSError:
+            payload.update(status="ERROR", erp_validated=False, reason="console_collection_failed")
+        finally:
+            try:
+                shutil.rmtree(private)
+                payload["private_cleanup"] = "REMOVED"
+            except OSError:
+                payload.update(status="ERROR", erp_validated=False,
+                               private_cleanup="FAILED_REQUIRES_OPERATOR")
+                # Remove the known credential file if other open files prevented rmtree.
+                try:
+                    (private / "config.json").unlink(missing_ok=True)
+                except OSError:
+                    payload["credential_file_cleanup"] = "FAILED_REQUIRES_OPERATOR"
     payload.update(run_id=run_id, approved_by=policy["approved_by"],
-                   approval_sha256=digest(policy_path.read_bytes()),
+                   approval_sha256=approval_sha256, approval_hash_scope="canonical_json",
                    bundle_sha256=manifest["bundle_sha256"], engine_sha256=snapshot_hash,
                    started_at=started, finished_at=utc(),
                    homologation_scope="read_only_pilot_not_product_certification")
-    write_json(output / "result.json", scrub(payload, secrets))
+    # Preserve control fields and hashes; redact only observed/expected data fields.
+    for event in payload.get("observations", []):
+        if isinstance(event, dict):
+            for key in ("observed", "expected"):
+                if key in event:
+                    event[key] = scrub(event[key], secrets)
     write_json(output / "case.json", case)
     write_json(output / "profile.json", profile)
-    # TIR logs/screenshots remain restricted local evidence, never uploaded automatically.
-    collect(output, create=True)
+    if payload.get("status") == "PASS":
+        try:
+            validate_success(payload, output)
+        except (Blocked, OSError, ValueError, TypeError, KeyError):
+            payload.update(status="ERROR", erp_validated=False, reason="evidence_validation_failed")
+    payload["evidence_status"] = "QUARANTINED" if private.exists() else "LOCAL_ONLY"
+    write_json(output / "result.json", payload)
+    if not private.exists():
+        collect(output, create=True)
     return payload
 
 
 def artifacts(root: Path) -> dict:
-    files = {}
-    for path in sorted(root.rglob("*")):
-        require(not path.is_symlink(), "symlink_in_evidence")
-        if path.is_file() and path.name not in {"evidence-manifest.json", "summary.md"}:
-            require(".private" not in path.relative_to(root).parts, "private_files_in_evidence")
-            files[path.relative_to(root).as_posix()] = digest(path.read_bytes())
-    return files
+    return artifact_hashes(root)
 
 
 def collect(root: Path, create: bool = False) -> dict:
-    require(not root.is_symlink(), "symlink_evidence_root")
+    require(not is_link(root), "symlink_evidence_root")
     result = load_json(root / "result.json")
     require(result.get("status") in {"PASS", "FAIL", "ERROR", "BLOCKED", "NOT_RUN", "SKIPPED"},
             "invalid_result_status")
     if result["status"] == "PASS":
-        counts = result.get("counts", {})
-        expected = result.get("checks_expected", 0)
-        require(counts == {"tests": 1, "failures": 0, "errors": 0, "skipped": 0}
-                and type(expected) is int and expected > 0
-                and result.get("checks_passed") == expected
-                and result.get("cleanup") == "SESSION_CLOSED"
-                and result.get("screenshots", 0) > 0, "invalid_pass_evidence")
-        identity = result.get("identity", [])
-        require(len(identity) == 4 and all(x.get("observed") is True for x in identity)
-                and {x.get("kind") for x in identity} == {"environment", "group", "branch", "routine"},
-                "invalid_pass_identity")
+        validate_success(result, root)
     found = artifacts(root)
     require("result.json" in found, "result_missing")
     manifest = {"schema_version": 1, "run_id": result["run_id"], "files": found}

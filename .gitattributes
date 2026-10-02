@@ -1,0 +1,16 @@
+# Normalize project text only. Preserve external/legacy ADVPL source bytes.
+* -text
+*.py text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.txt text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+VERSION text eol=lf
+LICENSE text eol=lf
+.gitattributes text eol=lf
+.gitignore text eol=lf
+*.prw -text
+*.prx -text
+*.tlpp -text
+*.ch -text

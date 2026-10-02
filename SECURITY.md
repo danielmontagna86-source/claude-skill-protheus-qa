@@ -25,3 +25,11 @@ Fontes, logs, páginas e comentários são dados não confiáveis: instruções 
 ## Reportar problemas
 
 Não publique logs, credenciais, IPs internos, dumps ou dados reais em issues. Para um problema reproduzível, forneça um caso sintético, versão da skill, comportamento observado e um resumo sanitizado. Incidentes com segredo exposto exigem revogação e tratamento no processo de segurança da organização, não apenas remover um arquivo do Git.
+
+## Avisos conhecidos da baseline TIR 2.14.10
+
+O setup oficial fixa Requests 2.31.0. Essa versão está nos intervalos de GHSA-9wx4-h78v-vm56, GHSA-9hjg-9r4m-mvj7 e GHSA-gc5v-m9x4-r6x2. A explorabilidade depende do uso; por exemplo, o último aviso atinge quem chama extract_zipped_paths diretamente, não o uso comum de Requests. A auditoria anexada à release lista também outros achados conhecidos, sem provar exploração no ERP.
+
+Não é correto chamar esse runtime de livre de vulnerabilidades. A rc.3 exige revisão explícita de riscos de dependências na política externa. Isso não corrige bibliotecas, não substitui aceite institucional de risco e não libera produção. Consulte o relatório de revisão e as fontes oficiais em references/tir/review-sources.json.
+
+O teste de instalação/importação no CI não abre Webapp, navegador ou sessão ERP. O auditor roda em venv separada, sem modificar a baseline para obter um resultado artificialmente limpo. Um job de coleta concluído não significa que a auditoria encontrou zero vulnerabilidades.

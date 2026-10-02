@@ -86,14 +86,14 @@ class OutcomeTests(unittest.TestCase):
     def test_zero_tests_cannot_be_collected_as_pass(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
-            core.write_json(root / "result.json", {"status": "PASS", "run_id": "invalid", "counts": {"tests": 0, "failures": 0, "errors": 0, "skipped": 0}})
+            core.write_json(root / "result.json", {"schema_version": 1, "status": "PASS", "run_id": "invalid", "counts": {"tests": 0, "failures": 0, "errors": 0, "skipped": 0}})
             with self.assertRaisesRegex(core.Blocked, "invalid_pass_evidence"):
                 runner.collect(root, create=True)
 
     def test_skipped_test_cannot_be_collected_as_pass(self):
         with tempfile.TemporaryDirectory() as d:
             root = Path(d)
-            core.write_json(root / "result.json", {"status": "PASS", "run_id": "invalid", "counts": {"tests": 1, "failures": 0, "errors": 0, "skipped": 1}})
+            core.write_json(root / "result.json", {"schema_version": 1, "status": "PASS", "run_id": "invalid", "counts": {"tests": 1, "failures": 0, "errors": 0, "skipped": 1}})
             with self.assertRaisesRegex(core.Blocked, "invalid_pass_evidence"):
                 runner.collect(root, create=True)
 

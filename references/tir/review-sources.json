@@ -1,0 +1,139 @@
+{
+  "review_date": "2026-10-01",
+  "timezone": "America/Sao_Paulo",
+  "sources": [
+    {
+      "id": "R01",
+      "title": "TIR release 2.14.10",
+      "url": "https://github.com/totvs/tir/releases/tag/v2.14.10",
+      "use": "Escopo e versão fixada.",
+      "type": "primary"
+    },
+    {
+      "id": "R02",
+      "title": "TIR fachada pública",
+      "url": "https://github.com/totvs/tir/blob/dbc12e7a0563174a3f6c16832046229d71d464cf/tir/main.py",
+      "use": "Assinaturas verificadas contra o blob Git; nenhuma API privada no executor.",
+      "type": "primary"
+    },
+    {
+      "id": "R03",
+      "title": "TIR setup.py",
+      "url": "https://github.com/totvs/tir/blob/v2.14.10/setup.py",
+      "use": "Python 3.12 e dependências fixadas, incluindo requests 2.31.0.",
+      "type": "primary"
+    },
+    {
+      "id": "R04",
+      "title": "TIR ConfigLoader",
+      "url": "https://github.com/totvs/tir/blob/v2.14.10/tir/technologies/core/config.py",
+      "use": "Isolamento de casos em processos por estado singleton.",
+      "type": "primary"
+    },
+    {
+      "id": "R05",
+      "title": "Python unittest 3.12",
+      "url": "https://docs.python.org/pt-br/3.12/library/unittest.html",
+      "use": "Contagens, erros, skips e falhas esperadas precisam ser distinguidos.",
+      "type": "primary"
+    },
+    {
+      "id": "R06",
+      "title": "Python json 3.12",
+      "url": "https://docs.python.org/3.12/library/json.html",
+      "use": "Parsing controlado: duplicatas, números não finitos e limites.",
+      "type": "primary"
+    },
+    {
+      "id": "R07",
+      "title": "Python subprocess 3.12",
+      "url": "https://docs.python.org/3.12/library/subprocess.html",
+      "use": "Processos, timeout, grupos e códigos de saída.",
+      "type": "primary"
+    },
+    {
+      "id": "R08",
+      "title": "Python tempfile 3.12",
+      "url": "https://docs.python.org/3.12/library/tempfile.html",
+      "use": "Limpeza pode falhar; context manager não é garantia de exclusão.",
+      "type": "primary"
+    },
+    {
+      "id": "R09",
+      "title": "Python shutil 3.12",
+      "url": "https://docs.python.org/3.12/library/shutil.html",
+      "use": "Erros de rmtree e diferenças de proteção contra symlinks.",
+      "type": "primary"
+    },
+    {
+      "id": "R10",
+      "title": "Git gitattributes",
+      "url": "https://git-scm.com/docs/gitattributes",
+      "use": "Normalização de LF/CRLF e eol.",
+      "type": "primary"
+    },
+    {
+      "id": "R11",
+      "title": "W3C PNG file structure",
+      "url": "https://www.w3.org/TR/PNG-Structure.html",
+      "use": "Assinatura, framing de chunks e CRC; não autentica o conteúdo da tela.",
+      "type": "primary"
+    },
+    {
+      "id": "R12",
+      "title": "Microsoft icacls",
+      "url": "https://learn.microsoft.com/en-us/windows-server/administration/windows-commands/icacls",
+      "use": "DACL, herança e concessão de permissões no Windows.",
+      "type": "primary"
+    },
+    {
+      "id": "R13",
+      "title": "GitHub workflow artifacts",
+      "url": "https://docs.github.com/en/actions/tutorials/store-and-share-data",
+      "use": "Integridade dos artefatos e fluxo entre jobs.",
+      "type": "primary"
+    },
+    {
+      "id": "R14",
+      "title": "Requests TLS advisory",
+      "url": "https://github.com/psf/requests/security/advisories/GHSA-9wx4-h78v-vm56",
+      "use": "Versões anteriores a 2.32.0; comportamento depende do uso de verify=False em Session.",
+      "type": "primary"
+    },
+    {
+      "id": "R15",
+      "title": "Requests netrc advisory",
+      "url": "https://github.com/psf/requests/security/advisories/GHSA-9hjg-9r4m-mvj7",
+      "use": "Versões anteriores a 2.32.4; URLs maliciosas e credenciais netrc.",
+      "type": "primary"
+    },
+    {
+      "id": "R16",
+      "title": "Requests temporary-file advisory",
+      "url": "https://github.com/psf/requests/security/advisories/GHSA-gc5v-m9x4-r6x2",
+      "use": "Versões anteriores a 2.33.0; afeta chamada direta de extract_zipped_paths, não uso comum.",
+      "type": "primary"
+    },
+    {
+      "id": "R17",
+      "title": "PyPA pip-audit",
+      "url": "https://github.com/pypa/pip-audit",
+      "use": "Auditoria de dependências, flags, códigos e limitações; não é análise estática de código.",
+      "type": "primary"
+    },
+    {
+      "id": "R18",
+      "title": "pip-audit 2.10.1",
+      "url": "https://pypi.org/project/pip-audit/2.10.1/",
+      "use": "Versão explicitamente escolhida do auditor.",
+      "type": "primary"
+    },
+    {
+      "id": "R19",
+      "title": "Selenium waits",
+      "url": "https://www.selenium.dev/documentation/webdriver/waits/",
+      "use": "Condições de sincronização não substituem asserção funcional.",
+      "type": "primary"
+    }
+  ]
+}

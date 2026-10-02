@@ -2,6 +2,24 @@
 
 Todas as mudanças relevantes deste projeto serão registradas aqui.
 
+## 0.2.0-rc.3 - 2026-10-01
+
+### Fixed
+
+- PASS exige imagens existentes, estrutura PNG válida e observações vinculadas ao caso aprovado.
+- Arquivos adicionais não escapam mais da integridade pelo nome summary.md.
+- Tipos booleanos não substituem contadores inteiros; JSON e caminhos recebem limites adicionais.
+- Interrupções encerram o processo próprio; falha de limpeza gera registro ERROR e quarentena.
+- O hash de aprovação fica ligado ao snapshot validado, não a um arquivo posteriormente alterado.
+- Pacotes byte-idênticos entre plataformas com textos normalizados e ZIP_STORED.
+
+### Added
+
+- Segunda revisão com regressões reproduzidas antes da correção e fontes primárias.
+- Reexecução de testes a partir do ZIP, comparação entre builds e leitura dos assets após publicação.
+- Instalação/importação TIR isolada e auditoria de dependências sem corrigir/ocultar achados.
+- Revisão explícita de risco de dependências na autorização. Não é aprovação de segurança do runtime.
+
 ## 0.2.0-rc.2 - 2026-10-01
 
 ### Fixed
