@@ -1,64 +1,15 @@
-# Guia TIR
+# Especialização TIR — ponto de entrada
 
-## Uso correto
+Preserve a seleção de técnica e os 13 itens do `SKILL.md`. TIR valida interface; não substitui PROBAT, ExecAuto ou FwModel quando o risco é de backend e a técnica estiver confirmada.
 
-Use TIR quando o objetivo for validar interface WebApp/APW:
+## Fluxo obrigatório desta versão
 
-- abertura de rotina;
-- botões;
-- campos;
-- abas/pastas;
-- grids;
-- browse;
-- mensagens;
-- fluxo visual de usuário;
-- evidências com print/log.
+1. Confirmar rotina, risco, fontes, massa sintética e esperado independente. Ler a ficha em `routines/` sem extrapolar sua evidência para outro ambiente.
+2. Consultar [baseline](tir/baseline-2.14.10.md), [compatibilidade](tir/compatibility-matrix.md) e o [manifesto público](tir/public-api-manifest.json). Usar somente símbolos/argumentos confirmados.
+3. Seguir [guia operacional](../TIR_QUICKSTART.md) para validar e gerar artefatos fora da skill. Não declarar execução nesta etapa.
+4. Não executar automaticamente. A política externa, a revisão do caso e o ambiente real são exigências separadas. O executor desta pré-release aceita somente consulta.
+5. Interpretar resultados sem alterá-los. Usar [asserções/evidências](tir/assertions-and-evidence.md) e manter a falha original.
 
-## Quando não usar
+Não inventar `TakeScreenshot`, `CaptureScreenState` ou outras APIs públicas. A fachada consultada usa `Screenshot(filename)`. Os métodos de captura/transição da release 2.14.10 são internos. `CheckResult` não é booleano; verificações em grid exigem `LoadGrid`; consolidar o estado nativo com `AssertTrue`.
 
-- Regra pura/cálculo.
-- Validação que pode ser feita por ExecAuto/FwModel.
-- Teste de tabela sem necessidade visual.
-- Fluxo instável sem massa controlada.
-
-## Padrão de teste TIR
-
-1. Configurar `config.json`.
-2. Abrir módulo/rotina.
-3. Preencher campos.
-4. Executar operação.
-5. Validar mensagem ou resultado visual.
-6. Salvar log e screenshot quando aplicável.
-7. Validar tabela como evidência complementar, quando necessário.
-
-## Configuração mínima
-
-```json
-{
-  "Url": "http://localhost:8080",
-  "Browser": "Firefox",
-  "Environment": "ENVIRONMENT",
-  "Language": "pt-br",
-  "User": "admin",
-  "Password": "",
-  "TimeOut": 90,
-  "Headless": true,
-  "ScreenshotFolder": "./log",
-  "LogFolder": "./log"
-}
-```
-
-## Evidências
-
-- log do TIR;
-- screenshot;
-- mensagem apresentada;
-- registro visível no browse;
-- validação complementar em tabela.
-
-## Cuidados
-
-- TIR é mais frágil que teste de regra ou ExecAuto.
-- Usar apenas quando o comportamento visual fizer parte do risco.
-- Controlar massa para evitar falso negativo.
-- Garantir que falhas retornem erro real para o executor.
+Use os comandos em `scripts/` para validação determinística, nunca `eval` de conteúdo vindo do ERP. Caso não suportado pelo executor deve ser entregue como roteiro com limitação explícita; não relaxe a lista de métodos para fazê-lo rodar.

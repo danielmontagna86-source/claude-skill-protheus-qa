@@ -1,95 +1,66 @@
-#!/usr/bin/env python3
-"""Build the official Claude Skill ZIP package.
-
-The repository may have a different name, but the ZIP must contain a top-level
-folder named exactly like the skill declared in SKILL.md: testing-protheus-routines.
-"""
-
+"""Build a reproducible skill ZIP with an internal SHA-256 inventory. No run data."""
 from __future__ import annotations
-
+import hashlib
+import json
 import sys
 import zipfile
 from pathlib import Path
-
 from validate_skill import SKILL_NAME, validate
+from validate_tir_release import validate as validate_release
 
-OUTPUT_DIR = "dist"
-OUTPUT_ZIP = f"{SKILL_NAME}.zip"
-
-EXCLUDED_DIRS = {
-    ".git",
-    ".github",
-    ".pytest_cache",
-    ".venv",
-    "__pycache__",
-    OUTPUT_DIR,
-}
-
-EXCLUDED_FILE_SUFFIXES = {
-    ".pyc",
-    ".pyo",
-    ".DS_Store",
-}
-
-
-def repo_root() -> Path:
-    return Path(__file__).resolve().parents[1]
-
-
-def should_include(path: Path, root: Path) -> bool:
-    rel = path.relative_to(root)
-
-    if any(part in EXCLUDED_DIRS for part in rel.parts):
-        return False
-
-    if path.name in EXCLUDED_FILE_SUFFIXES:
-        return False
-
-    if any(path.name.endswith(suffix) for suffix in EXCLUDED_FILE_SUFFIXES):
-        return False
-
-    return path.is_file()
+EXCLUDED_DIRS = {".git", ".github", ".venv", "venv", "__pycache__", ".pytest_cache",
+                 "dist", ".private", "artifacts", "evidence", "qa-work", "reports", "screenshots", "logs", "runs", "bundles"}
+INCLUDED_DIRS = {"references", "routines", "templates", "examples", "evals", "scripts",
+                 "tests", "RELEASE_NOTES", ".claude-plugin"}
+ROOT_FILES = {"SKILL.md", "README.md", "INSTALL.md", "USAGE.md", "CHANGELOG.md", "VERSION",
+              "LICENSE", "SKILL_MANIFEST.md", "MARKETPLACE.md", "TIR_QUICKSTART.md", "SECURITY.md", "requirements-tir.txt"}
 
 
 def collect_files(root: Path) -> list[Path]:
-    return sorted(path for path in root.rglob("*") if should_include(path, root))
+    selected = []
+    for path in root.rglob("*"):
+        rel = path.relative_to(root)
+        if any(x in EXCLUDED_DIRS for x in rel.parts): continue
+        if path.is_symlink(): raise ValueError("Symlinks must not be packaged")
+        if not path.is_file() or path.suffix in {".pyc", ".pyo"}: continue
+        if len(rel.parts) == 1 and path.name not in ROOT_FILES: continue
+        if len(rel.parts) > 1 and rel.parts[0] not in INCLUDED_DIRS: continue
+        if path.name.startswith(".env") or path.name in {"config.json", "approval.json", "result.json"}:
+            raise ValueError("Runtime or secret-bearing filename inside the distributable")
+        selected.append(path)
+    return sorted(selected)
 
 
 def build_zip(root: Path) -> Path:
-    output_dir = root / OUTPUT_DIR
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    output_path = output_dir / OUTPUT_ZIP
-    if output_path.exists():
-        output_path.unlink()
-
-    files = collect_files(root)
-
-    with zipfile.ZipFile(output_path, "w", compression=zipfile.ZIP_DEFLATED) as archive:
-        for file_path in files:
-            rel = file_path.relative_to(root)
-            archive_name = Path(SKILL_NAME) / rel
-            archive.write(file_path, archive_name.as_posix())
-
-    print(f"Package created: {output_path}")
-    print(f"Top-level folder inside ZIP: {SKILL_NAME}/")
-    print(f"Files packaged: {len(files)}")
-    return output_path
+    output = root / "dist"; output.mkdir(exist_ok=True)
+    target = output / f"{SKILL_NAME}.zip"
+    files = {p.relative_to(root).as_posix(): p.read_bytes() for p in collect_files(root)}
+    manifest = {"skill": SKILL_NAME, "version": (root / "VERSION").read_text().strip(),
+                "files": {name: hashlib.sha256(data).hexdigest() for name, data in files.items()}}
+    files["PACKAGE_MANIFEST.json"] = (json.dumps(manifest, sort_keys=True, indent=2) + "\n").encode()
+    with zipfile.ZipFile(target, "w", compression=zipfile.ZIP_DEFLATED) as archive:
+        for name, data in sorted(files.items()):
+            info = zipfile.ZipInfo(f"{SKILL_NAME}/{name}", date_time=(2026, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.create_system = 3
+            info.external_attr = 0o100644 << 16
+            archive.writestr(info, data)
+    with zipfile.ZipFile(target) as archive:
+        if archive.testzip() is not None: raise ValueError("ZIP verification failed")
+    checksum = hashlib.sha256(target.read_bytes()).hexdigest()
+    (output / "SHA256SUMS.txt").write_text(f"{checksum}  {target.name}\n", encoding="utf-8")
+    print(f"Package: {target}; files: {len(files)}; SHA256: {checksum}")
+    return target
 
 
 def main() -> int:
     errors, warnings = validate()
-
-    for warning in warnings:
-        print(f"WARNING: {warning}", file=sys.stderr)
-
+    errors += validate_release()
+    for warning in warnings: print("WARNING: " + warning, file=sys.stderr)
     if errors:
-        print("Package aborted because validation failed:", file=sys.stderr)
-        for error in errors:
-            print(f"- {error}", file=sys.stderr)
+        for error in errors: print(error, file=sys.stderr)
         return 1
-
-    build_zip(repo_root())
+    build_zip(Path(__file__).resolve().parents[1])
     return 0
 
 

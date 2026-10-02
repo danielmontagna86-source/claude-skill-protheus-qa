@@ -1,0 +1,2 @@
+# Runtime opcional. Python 3.12. Não é lockfile transitivo nem auditoria de CVEs.
+tir-framework==2.14.10

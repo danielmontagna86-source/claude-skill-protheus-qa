@@ -1,35 +1,85 @@
-name: Validate and package Claude Skill
+name: Validate and package Protheus QA Skill
 
 on:
   push:
-    branches:
-      - main
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   validate-and-package:
-    name: Validate and package
-    runs-on: ubuntu-latest
-
+    name: Python 3.12 / ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Checkout exact revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
-          python-version: '3.11'
-
-      - name: Validate skill structure
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Offline deterministic tests - no TIR or ERP
+        run: python -m unittest discover -s tests -v
+      - name: Preserve original skill contract
         run: python scripts/validate_skill.py
-
-      - name: Build official ZIP package
+      - name: Validate release consistency
+        run: python scripts/validate_tir_release.py
+      - name: Verify pinned official TIR API - source only
+        run: python scripts/verify_tir_api.py --fetch
+      - name: Build reproducible package
         run: python scripts/package_skill.py
-
-      - name: Upload skill package artifact
-        uses: actions/upload-artifact@v4
+      - name: Save validated package
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
-          name: testing-protheus-routines
-          path: dist/testing-protheus-routines.zip
+          name: testing-protheus-routines-${{ matrix.os }}
+          path: |
+            dist/testing-protheus-routines.zip
+            dist/SHA256SUMS.txt
           if-no-files-found: error
+          retention-days: 14
+
+  publish-prerelease:
+    name: Publish skill prerelease
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: [validate-and-package]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout validated revision
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Python 3.12
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
+        with:
+          python-version: '3.12'
+      - name: Package validated source
+        run: python scripts/package_skill.py
+      - name: Publish without replacing an existing release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          version="$(tr -d '\r\n' < VERSION)"
+          [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]] || { echo "Only explicit release candidates are automated"; exit 1; }
+          tag="v${version}"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            echo "Release exists; assets will not be overwritten."
+            exit 0
+          fi
+          gh release create "$tag" dist/testing-protheus-routines.zip dist/SHA256SUMS.txt \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+            --title "Protheus QA ${version} - TIR 2.14.10" \
+            --notes-file "RELEASE_NOTES/${tag}.md" --prerelease --latest=false

@@ -1,0 +1,18 @@
+{
+  "allowed_buttons": [],
+  "approved_by": "PREENCHER",
+  "bundle_sha256": "PREENCHER",
+  "engine_sha256": "PREENCHER",
+  "environment_kind": "homologation",
+  "expires_at": "2026-01-01T00:00:00Z",
+  "integrations_blocked": false,
+  "least_privilege_confirmed": false,
+  "max_seconds": 300,
+  "schema_version": 1,
+  "target": {
+    "Environment": "PREENCHER",
+    "Url": "PREENCHER",
+    "branch": "PREENCHER",
+    "group": "PREENCHER"
+  }
+}

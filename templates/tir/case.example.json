@@ -1,0 +1,36 @@
+{
+  "case_id": "QA-001",
+  "fixture": {
+    "description": "PREENCHER",
+    "record_key": "PREENCHER",
+    "synthetic": true
+  },
+  "mode": "read_only",
+  "oracle": {
+    "approved_by": "PREENCHER",
+    "description": "PREENCHER",
+    "source_id": "S1"
+  },
+  "routine": "PREENCHER",
+  "routine_marker": "PREENCHER",
+  "schema_version": 1,
+  "sources": [
+    {
+      "id": "S1",
+      "revision": "PREENCHER",
+      "status": "confirmed",
+      "uri": "PREENCHER"
+    }
+  ],
+  "steps": [
+    {
+      "expected": "PREENCHER",
+      "kwargs": {
+        "field": "PREENCHER"
+      },
+      "method": "GetValue",
+      "source_id": "S1"
+    }
+  ],
+  "title": "PREENCHER"
+}
