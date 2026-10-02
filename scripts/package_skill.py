@@ -12,7 +12,7 @@ EXCLUDED_DIRS = {".git", ".github", ".venv", "venv", "__pycache__", ".pytest_cac
                  "dist", ".private", "artifacts", "evidence", "qa-work", "reports", "screenshots", "logs", "runs", "bundles"}
 INCLUDED_DIRS = {"references", "routines", "templates", "examples", "evals", "scripts",
                  "tests", "RELEASE_NOTES", ".claude-plugin"}
-ROOT_FILES = {"SKILL.md", "README.md", "INSTALL.md", "USAGE.md", "CHANGELOG.md", "VERSION",
+ROOT_FILES = {"SKILL.md", "README.md", "INSTALL.md", "INSTALL_WITH_AI.md", "USAGE.md", "USAGE_WITH_AI.md", "CHANGELOG.md", "VERSION",
               "LICENSE", "SKILL_MANIFEST.md", "MARKETPLACE.md", "TIR_QUICKSTART.md", "SECURITY.md", "requirements-tir.txt", ".gitattributes"}
 
 

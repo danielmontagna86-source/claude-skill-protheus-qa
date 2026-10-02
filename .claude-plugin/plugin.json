@@ -21,5 +21,5 @@
   "name": "protheus-qa",
   "repository": "https://github.com/danielmontagna86-source/claude-skill-protheus-qa",
   "skills": "./",
-  "version": "0.2.0-rc.3"
+  "version": "0.2.0-rc.4"
 }

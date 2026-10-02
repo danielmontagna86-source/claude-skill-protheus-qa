@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.0-rc.4 — Procedimentos de instalação e uso com IA
+
+- INSTALL.md revisado: skill versus runtime, release fixa, checksum, destino sem sobrescrita, validação offline, descoberta, atualização e rollback.
+- INSTALL_WITH_AI.md: prompts de instalação por projeto, verificação e preparação separada/autorizada do runtime.
+- USAGE_WITH_AI.md: primeiro uso, contexto mínimo, prompts de análise, regressão, geração offline e interpretação de evidências.
+- README e guias existentes conectados; os novos guias entram no pacote e recebem testes de links/contrato/CLI/distribuição.
+- Sem alteração do SKILL.md canônico, do motor TIR ou dos modelos de segurança. Riscos de dependências e homologação ERP continuam pendentes.
+
+
 Todas as mudanças relevantes deste projeto serão registradas aqui.
 
 ## 0.2.0-rc.3 - 2026-10-01
