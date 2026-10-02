@@ -99,3 +99,7 @@ A execução PASS exige um caso executado, todas as verificações previstas, id
 O próximo marco é um piloto real de leitura, com controle negativo que prove que o teste detecta a falha esperada. Gravações, cleanup de dados, ExecAuto/FwModel/PROBAT executáveis e expansão dos fluxos não estão implementados no runner desta pré-release. Essas técnicas continuam disponíveis como planejamento/roteiro na skill existente.
 
 Não houve avaliação comparativa por modelo nem revisão humana externa. Não há garantia de ausência de defeitos, certificação TOTVS, instalação na sua máquina ou acesso já realizado ao seu ERP.
+
+## Controles adicionais da rc.5
+
+Use marcadores distintos para ambiente, empresa/grupo e filial; repetir um texto genérico não confirma identidade. Resultado PASS coletável exige `exit_code=0`, `private_cleanup=REMOVED` e `evidence_status=LOCAL_ONLY`. Resultados históricos incompletos não devem ser editados para passar: mantenha-os e obtenha nova execução autorizada. PNGs exigem CRC, layout e stream zlib válidos, com expansão limitada a 128 MiB. Esses controles não provam o conteúdo funcional nem autenticidade.

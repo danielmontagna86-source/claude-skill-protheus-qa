@@ -22,7 +22,7 @@ from qa_test_fixtures import png_bytes
 
 def complete_result():
     c, p = case(), profile()
-    return {"schema_version": 1, "run_id": "review-control", "case_id": c["case_id"],
+    return {"schema_version": 1, "exit_code": 0, "private_cleanup": "REMOVED", "evidence_status": "LOCAL_ONLY", "run_id": "review-control", "case_id": c["case_id"],
             "status": "PASS", "counts": {"tests": 1, "failures": 0, "errors": 0, "skipped": 0},
             "checks_expected": 1, "checks_passed": 1, "cleanup": "SESSION_CLOSED", "screenshots": 1,
             "identity": [{"kind": k, "observed": True} for k in ["environment", "group", "branch", "routine"]],

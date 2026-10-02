@@ -168,14 +168,28 @@ def run_worker(directory: Path, factory=None) -> int:
 
 
 def stop_tree(process: subprocess.Popen) -> None:
+    """Stop only the runner-owned process group/tree, including surviving descendants.
+
+    The POSIX worker must have been created with start_new_session=True. Waiting
+    for its leader alone is insufficient: a child can ignore SIGTERM after the
+    leader exits. The final group kill handles that case without a global kill.
+    """
     if os.name == "nt":
-        subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
-                       capture_output=True, check=False)
+        stopped = subprocess.run(["taskkill", "/PID", str(process.pid), "/T", "/F"],
+                                 capture_output=True, check=False, timeout=10)
+        require(stopped.returncode == 0, "owned_process_tree_stop_failed")
     else:
+        require(process.pid != os.getpgrp(), "refuse_to_stop_caller_group")
         try:
             os.killpg(process.pid, signal.SIGTERM)
+        except ProcessLookupError:
+            pass
+        try:
             process.wait(timeout=3)
         except subprocess.TimeoutExpired:
+            pass
+        # The leader may have exited promptly while its descendants stayed alive.
+        try:
             os.killpg(process.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
@@ -304,12 +318,12 @@ def execute(bundle: Path, policy_path: Path, output: Path) -> dict:
                     event[key] = scrub(event[key], secrets)
     write_json(output / "case.json", case)
     write_json(output / "profile.json", profile)
+    payload["evidence_status"] = "QUARANTINED" if private.exists() else "LOCAL_ONLY"
     if payload.get("status") == "PASS":
         try:
             validate_success(payload, output)
         except (Blocked, OSError, ValueError, TypeError, KeyError):
             payload.update(status="ERROR", erp_validated=False, reason="evidence_validation_failed")
-    payload["evidence_status"] = "QUARANTINED" if private.exists() else "LOCAL_ONLY"
     write_json(output / "result.json", payload)
     if not private.exists():
         collect(output, create=True)
@@ -325,6 +339,9 @@ def collect(root: Path, create: bool = False) -> dict:
     result = load_json(root / "result.json")
     require(result.get("status") in {"PASS", "FAIL", "ERROR", "BLOCKED", "NOT_RUN", "SKIPPED"},
             "invalid_result_status")
+    require(type(result.get("erp_validated", False)) is bool, "invalid_erp_validation_flag")
+    require(result["status"] == "PASS" or result.get("erp_validated", False) is False,
+            "failed_run_cannot_validate_erp")
     if result["status"] == "PASS":
         validate_success(result, root)
     found = artifacts(root)

@@ -4,6 +4,7 @@ import argparse
 import io
 import json
 import re
+import unicodedata
 import zipfile
 from pathlib import Path, PurePosixPath
 from tirqa_core import Blocked, digest, parse_json, require, write_json
@@ -17,14 +18,34 @@ def verify_archive(data: bytes) -> dict:
         names = archive.namelist()
         require(len(names) == len(set(names)) and 1 < len(names) <= 5000, "duplicate_or_invalid_entries")
         total = 0
+        portable_names = set()
         for info in archive.infolist():
             path = PurePosixPath(info.filename)
             require(not path.is_absolute() and ".." not in path.parts and "\\" not in info.filename
-                    and path.parts[0] == SKILL and len(path.parts) >= 2, "unsafe_archive_path")
+                    and len(path.parts) >= 2 and path.parts[0] == SKILL, "unsafe_archive_path")
+            require(info.filename == "/".join(path.parts), "noncanonical_archive_path")
+            for part in path.parts:
+                require(part == unicodedata.normalize("NFC", part) and len(part) <= 255
+                        and not part.endswith((".", " "))
+                        and not any(ord(ch) < 32 or ch in '<>:"|?*' for ch in part),
+                        "nonportable_archive_path")
+                stem = part.split(".")[0].upper()
+                require(stem not in {"CON", "PRN", "AUX", "NUL", "CONIN$", "CONOUT$"}
+                        and not re.fullmatch(r"(?:COM|LPT)[1-9¹²³]", stem), "reserved_archive_path")
+            portable = info.filename.casefold()
+            require(portable not in portable_names, "case_colliding_archive_paths")
+            portable_names.add(portable)
+            require(not info.flag_bits & 1, "encrypted_archive_not_supported")
+            require(info.compress_type in {zipfile.ZIP_STORED, zipfile.ZIP_DEFLATED},
+                    "unsupported_archive_compression")
             require(not info.is_dir() and ((info.external_attr >> 16) & 0o170000) == 0o100000,
                     "non_regular_archive_entry")
             total += info.file_size
             require(info.file_size <= 5_000_000 and total <= 20_000_000, "expanded_archive_too_large")
+        for name in portable_names:
+            parts = name.split("/")
+            require(not any("/".join(parts[:i]) in portable_names for i in range(1, len(parts))),
+                    "archive_file_directory_collision")
         require(archive.testzip() is None, "archive_crc_failed")
         manifest = parse_json(archive.read(SKILL + "/PACKAGE_MANIFEST.json"))
         require(manifest.get("skill") == SKILL and isinstance(manifest.get("files"), dict), "invalid_package_manifest")

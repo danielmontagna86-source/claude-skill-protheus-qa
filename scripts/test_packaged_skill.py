@@ -1,5 +1,6 @@
 """Re-run tests from the exact validated distribution, not only the checkout."""
 import argparse
+import io
 import subprocess
 import sys
 import tempfile
@@ -13,9 +14,10 @@ def main():
     parser.add_argument("--zip", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
-    verify_archive(args.zip.read_bytes())
+    data = args.zip.read_bytes()
+    verify_archive(data)
     with tempfile.TemporaryDirectory(prefix="qa-distribution-") as temp:
-        with zipfile.ZipFile(args.zip) as archive: archive.extractall(temp)
+        with zipfile.ZipFile(io.BytesIO(data)) as archive: archive.extractall(temp)
         root = Path(temp) / "testing-protheus-routines"
         return subprocess.run([sys.executable, str(root / "scripts/run_local_checks.py"),
                                "--output", str(args.output.resolve())], cwd=root, timeout=180).returncode

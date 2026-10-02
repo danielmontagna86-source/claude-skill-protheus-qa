@@ -5,6 +5,7 @@ import ast
 import hashlib
 import importlib.metadata
 import json
+import math
 import re
 import sys
 from datetime import datetime, timezone
@@ -75,6 +76,8 @@ def parse_json(raw: bytes) -> dict:
         require(depth <= 64 and nodes <= 100000, "json_too_deep_or_complex")
         if isinstance(item, dict): pending.extend((v, depth + 1) for v in item.values())
         elif isinstance(item, list): pending.extend((v, depth + 1) for v in item)
+        elif isinstance(item, float):
+            require(math.isfinite(item), "nonfinite_json")
     return data
 
 
@@ -154,8 +157,10 @@ def validate_profile(profile: dict, execution: bool = False) -> None:
     for check in checks:
         exact_keys(check, {"kind", "text"})
         require(text(check["text"]), "empty_identity_check")
+        require(isinstance(check["kind"], str), "identity_kind_must_be_text")
         kinds.add(check["kind"])
     require(kinds == {"environment", "group", "branch"}, "identity_scope_missing")
+    require(len({check["text"] for check in checks}) == 3, "distinct_identity_markers_required")
     baseline = profile["baseline"]
     exact_keys(baseline, {"release", "appserver", "webapp", "lib", "rpo", "interface_evidence"})
     require(all(text(v) for v in baseline.values()), "baseline_incomplete")
@@ -321,7 +326,11 @@ def approve(policy: dict, case: dict, profile: dict, manifest: dict,
     require(policy["engine_sha256"] == engine_hash(), "unapproved_engine")
     require(policy["dependency_risks_reviewed"] is True, "dependency_risk_review_required")
     require(text(policy["approved_by"]), "approver_required")
-    expiry = datetime.fromisoformat(policy["expires_at"].replace("Z", "+00:00"))
+    require(text(policy["expires_at"]), "expiry_must_be_text")
+    try:
+        expiry = datetime.fromisoformat(policy["expires_at"].replace("Z", "+00:00"))
+    except ValueError:
+        raise Blocked("invalid_expiry_timestamp") from None
     require(expiry.tzinfo is not None, "timezone_required")
     current = now or datetime.now(timezone.utc)
     require(0 < (expiry - current).total_seconds() <= 86400, "approval_expired_or_too_long")
