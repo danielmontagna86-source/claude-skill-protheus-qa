@@ -1,6 +1,6 @@
 # Instalação — Protheus QA
 
-**Procedimento da versão 0.2.0-rc.4 · Daniel Montagna / Protheus IA Lab**
+**Procedimento da versão 0.2.0-rc.5 · Daniel Montagna / Protheus IA Lab**
 
 [Início](README.md) · [Instalar com IA](INSTALL_WITH_AI.md) · [Usar com IA](USAGE_WITH_AI.md) · [Preparar execução TIR](TIR_QUICKSTART.md)
 
@@ -18,7 +18,7 @@ O repositório chama-se `claude-skill-protheus-qa`. O nome da skill e de sua pas
 
 ## 2. Baixe o pacote da release
 
-Abra a [release v0.2.0-rc.4](https://github.com/danielmontagna86-source/claude-skill-protheus-qa/releases/tag/v0.2.0-rc.4). Baixe os assets `testing-protheus-routines.zip` e `SHA256SUMS.txt`. Não confunda o pacote instalável com o botão **Source code (zip)** ou com o ZIP externo de um artifact do GitHub Actions.
+Abra a [release v0.2.0-rc.5](https://github.com/danielmontagna86-source/claude-skill-protheus-qa/releases/tag/v0.2.0-rc.5). Baixe os assets `testing-protheus-routines.zip` e `SHA256SUMS.txt`. Não confunda o pacote instalável com o botão **Source code (zip)** ou com o ZIP externo de um artifact do GitHub Actions.
 
 A pasta interna deve ser `testing-protheus-routines/`, contendo `SKILL.md`, `VERSION`, scripts, referências e estes guias. Leia as notas da release e o código antes de executar scripts. Checksum verifica integridade contra o valor publicado; não é assinatura independente nem certificação de segurança.
 
@@ -32,7 +32,7 @@ Este bloco acessa apenas o GitHub para baixar os dois assets. Se a rede corporat
 
 ```powershell
 $ErrorActionPreference = 'Stop'
-$Version = '0.2.0-rc.4'
+$Version = '0.2.0-rc.5'
 $Base = "https://github.com/danielmontagna86-source/claude-skill-protheus-qa/releases/download/v$Version"
 $Stage = Join-Path ([IO.Path]::GetTempPath()) ('protheus-qa-' + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $Stage | Out-Null
@@ -70,7 +70,7 @@ Test-Path -LiteralPath (Join-Path $Destination 'SKILL.md')
 Write-Output "Skill copiada para: $Destination"
 ```
 
-Resultado esperado: versão `0.2.0-rc.4`, `True` e o caminho correto. Isso comprova cópia/estrutura, não descoberta pelo agente nem homologação. Abra uma nova sessão da IA e faça o teste da seção 6.
+Resultado esperado: versão `0.2.0-rc.5`, `True` e o caminho correto. Isso comprova cópia/estrutura, não descoberta pelo agente nem homologação. Abra uma nova sessão da IA e faça o teste da seção 6.
 
 Não faça clone Git dentro da pasta de skills de outro repositório: isso pode criar um repositório aninhado em vez de arquivos normalmente compartilháveis. O pacote extraído não contém `.git`. Para compartilhar com a equipe, revise o diff e versione **somente a pasta instalada**; nunca inclua workspace, evidências ou segredos.
 

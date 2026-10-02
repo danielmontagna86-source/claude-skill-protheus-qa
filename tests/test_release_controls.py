@@ -1,7 +1,5 @@
 """Release, archive and authorization controls. No external service calls."""
-import copy
 import io
-import json
 import tempfile
 import subprocess
 import os

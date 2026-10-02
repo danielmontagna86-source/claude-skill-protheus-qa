@@ -1,6 +1,6 @@
 # Protheus QA — testing-protheus-routines
 
-**Daniel Montagna / Protheus IA Lab · versão 0.2.0-rc.4**
+**Daniel Montagna / Protheus IA Lab · versão 0.2.0-rc.5**
 
 Skill para planejar e revisar testes de rotinas e customizações TOTVS Protheus, com TDN, ADVPL/TLPP, PROBAT, ExecAuto/FwModel e TIR. Mantém o nome `testing-protheus-routines` e o contrato original de 13 itens do [SKILL.md](SKILL.md).
 
@@ -15,13 +15,17 @@ Skill para planejar e revisar testes de rotinas e customizações TOTVS Protheus
 
 A instalação básica copia a skill; **não exige TIR e não acessa o ERP**. Os guias também acompanham o ZIP instalável. A rc.4 atualiza o onboarding e sua validação; não amplia o executor nem elimina os riscos identificados na rc.3.
 
+## Revisão adversarial rc.5
+
+A revisão da rc.4 reproduziu falhas adicionais em finalização de resultados, encerramento de processos, validação PNG, caminhos ZIP, JSON e autorização. As correções têm controles de regressão. Consulte [escopo, achados e limitações](references/tir/review-rc5.md). O workflow complementar registra CodeQL, cobertura offline e teste de instalação PowerShell com arquivos locais; leia seus resultados, não apenas a configuração.
+
 ## O que esta versão entrega
 
 A especialização TIR 2.14.10 acrescenta seis comandos: inspeção de fontes sem regravação, validação de caso/perfil, preflight estático, geração determinística, executor controlado e verificação de evidências. A execução liberada é **um caso de consulta por processo, em homologação segregada**. Gravações e rotinas transacionais não são suportadas pelo executor desta pré-release.
 
 **Testes offline e publicação não equivalem a homologação no ERP.** Não houve validação funcional em uma instalação Protheus nesta entrega. Os testes com helper simulado registram `execution_mode=simulated` e `erp_validated=false`.
 
-Para preparar uma execução autorizada, consulte o **[guia prático Windows e operação](TIR_QUICKSTART.md)**. Consulte [limites de segurança](SECURITY.md), [baseline TIR](references/tir/baseline-2.14.10.md), [notas da versão](RELEASE_NOTES/v0.2.0-rc.4.md) e [avaliações comportamentais pendentes](evals/tir-behavioral.md).
+Para preparar uma execução autorizada, consulte o **[guia prático Windows e operação](TIR_QUICKSTART.md)**. Consulte [limites de segurança](SECURITY.md), [baseline TIR](references/tir/baseline-2.14.10.md), [notas da versão](RELEASE_NOTES/v0.2.0-rc.5.md) e [avaliações comportamentais pendentes](evals/tir-behavioral.md).
 
 ## Segunda revisão técnica
 
@@ -31,7 +35,7 @@ A rc.3 acrescenta validação de PNG e observações, encerramento em interrupç
 
 ## Instalação por projeto
 
-Use o pacote da release `v0.2.0-rc.4`, conferindo `SHA256SUMS.txt`, e siga [INSTALL.md](INSTALL.md). A pasta final é `.claude/skills/testing-protheus-routines` para Claude Code ou `.agents/skills/testing-protheus-routines` para Codex. O guia interrompe a instalação se o destino já existir e evita repositórios Git aninhados.
+Use o pacote da release `v0.2.0-rc.5`, conferindo `SHA256SUMS.txt`, e siga [INSTALL.md](INSTALL.md). A pasta final é `.claude/skills/testing-protheus-routines` para Claude Code ou `.agents/skills/testing-protheus-routines` para Codex. O guia interrompe a instalação se o destino já existir e evita repositórios Git aninhados.
 
 Para instalação assistida, copie o prompt de [INSTALL_WITH_AI.md](INSTALL_WITH_AI.md) no agente aberto no projeto. Sem acesso à máquina, a IA apenas orienta; não declare instalação local a partir de uma resposta textual.
 

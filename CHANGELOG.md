@@ -1,3 +1,7 @@
+# 0.2.0-rc.5 — revisão adversarial e regressão
+
+Corrige finalização PASS inconsistente, descendente POSIX sobrevivente, PNG ilegível com CRC válido, colisões Windows em ZIP, troca de arquivo após verificação, overflow JSON, validade de autorização inválida e marcadores de identidade duplicados. Acrescenta testes e verificações CodeQL/cobertura/instalação. Runtime TIR e alertas de dependência não foram alterados; não há homologação ERP.
+
 # Changelog
 
 ## 0.2.0-rc.4 — Procedimentos de instalação e uso com IA

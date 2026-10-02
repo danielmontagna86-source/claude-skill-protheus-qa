@@ -3,7 +3,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import sys
 from pathlib import Path
 
 from tirqa_core import (Blocked, generate, inspect_sources, load_json, preflight,

@@ -27,18 +27,59 @@ def regular_files(root: Path):
                 yield path
 
 
+def _scanline_layout(width: int, height: int, channels: int, depth: int,
+                     interlace: int) -> list[tuple[int, int]]:
+    passes = ((0, 0, 1, 1),) if interlace == 0 else (
+        (0, 0, 8, 8), (4, 0, 8, 8), (0, 4, 4, 8), (2, 0, 4, 4),
+        (0, 2, 2, 4), (1, 0, 2, 2), (0, 1, 1, 2))
+    rows = []
+    for x, y, dx, dy in passes:
+        columns = max(0, (width - x + dx - 1) // dx)
+        count = max(0, (height - y + dy - 1) // dy)
+        if columns and count:
+            rows.append((1 + (columns * channels * depth + 7) // 8, count))
+    return rows
+
+
+def _valid_scanlines(compressed: bytes, layout: list[tuple[int, int]]) -> bool:
+    expected = sum(stride * count for stride, count in layout)
+    # Bounded decoding; the compressed/file size alone cannot prevent a PNG bomb.
+    if not (0 < expected <= 128 * 1024 * 1024):
+        return False
+    try:
+        decoder = zlib.decompressobj()
+        raw = decoder.decompress(compressed, expected + 1)
+        if (len(raw) != expected or not decoder.eof or decoder.unused_data
+                or decoder.unconsumed_tail):
+            return False
+    except zlib.error:
+        return False
+    offset = 0
+    for stride, count in layout:
+        for _ in range(count):
+            if raw[offset] > 4:
+                return False
+            offset += stride
+    return True
+
+
 def png_is_structurally_valid(data: bytes) -> bool:
-    """Check PNG framing, dimensions and CRCs; not screen semantics or authenticity."""
+    """Validate CRC, PNG layout and bounded pixel stream, not visual authenticity."""
     if not data.startswith(b"\x89PNG\r\n\x1a\n") or len(data) > MAX_FILE_BYTES:
         return False
-    pos, chunks, has_idat = 8, 0, False
+    pos, chunks = 8, 0
+    compressed = bytearray()
+    idat_started, idat_ended, palette = False, False, False
+    layout, color, depth = [], -1, 0
+    formats = {0: (1, {1, 2, 4, 8, 16}), 2: (3, {8, 16}),
+               3: (1, {1, 2, 4, 8}), 4: (2, {8, 16}), 6: (4, {8, 16})}
     while pos + 12 <= len(data):
         size = struct.unpack(">I", data[pos:pos+4])[0]
         end = pos + 12 + size
         if end > len(data) or chunks >= 10000:
             return False
         kind, payload = data[pos+4:pos+8], data[pos+8:pos+8+size]
-        if not all(65 <= c <= 90 or 97 <= c <= 122 for c in kind):
+        if not all(65 <= c <= 90 or 97 <= c <= 122 for c in kind) or kind[2] & 32:
             return False
         crc = struct.unpack(">I", data[pos+8+size:end])[0]
         if (zlib.crc32(kind + payload) & 0xffffffff) != crc:
@@ -46,15 +87,32 @@ def png_is_structurally_valid(data: bytes) -> bool:
         if chunks == 0:
             if kind != b"IHDR" or size != 13:
                 return False
-            width, height = struct.unpack(">II", payload[:8])
-            if not (0 < width <= 30000 and 0 < height <= 30000):
+            width, height, depth, color, compression, filtering, interlace = struct.unpack(">IIBBBBB", payload)
+            if (not (0 < width <= 30000 and 0 < height <= 30000) or color not in formats
+                    or depth not in formats[color][1] or compression != 0 or filtering != 0
+                    or interlace not in (0, 1)):
                 return False
+            layout = _scanline_layout(width, height, formats[color][0], depth, interlace)
         elif kind == b"IHDR":
             return False
-        if kind == b"IDAT" and size > 0:
-            has_idat = True
-        if kind == b"IEND":
-            return size == 0 and has_idat and end == len(data)
+        elif kind == b"PLTE":
+            if (palette or idat_started or color in (0, 4) or size == 0 or size % 3
+                    or size > 768 or (color == 3 and size // 3 > 2**depth)):
+                return False
+            palette = True
+        elif kind == b"IDAT":
+            if idat_ended or (color == 3 and not palette):
+                return False
+            idat_started = True
+            compressed.extend(payload)
+        elif kind == b"IEND":
+            return (size == 0 and end == len(data) and idat_started
+                    and _valid_scanlines(bytes(compressed), layout))
+        else:
+            if not kind[0] & 32:  # Unknown critical chunk cannot be ignored.
+                return False
+            if idat_started:
+                idat_ended = True
         pos, chunks = end, chunks + 1
     return False
 
@@ -91,6 +149,9 @@ def validate_success(result: dict, root: Path) -> None:
             and all(type(v) is int for v in counts.values())
             and counts == {"tests": 1, "failures": 0, "errors": 0, "skipped": 0},
             "invalid_pass_evidence")
+    require(type(result.get("exit_code")) is int and result["exit_code"] == 0
+            and result.get("private_cleanup") == "REMOVED"
+            and result.get("evidence_status") == "LOCAL_ONLY", "invalid_pass_finalization")
     for key in ("checks_expected", "checks_passed", "screenshots"):
         require(type(result.get(key)) is int and result[key] > 0, "invalid_pass_evidence")
     require(result["checks_expected"] == result["checks_passed"]

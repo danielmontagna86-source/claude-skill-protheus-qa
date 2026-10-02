@@ -1,6 +1,6 @@
 # Instalação assistida por IA
 
-**Procedimento da versão 0.2.0-rc.4**
+**Procedimento da versão 0.2.0-rc.5**
 
 [Início](README.md) · [Instalação manual](INSTALL.md) · [Uso com IA](USAGE_WITH_AI.md)
 
@@ -18,7 +18,7 @@ local do agente que estou usando (Claude Code ou Codex).
 
 Origem autorizada:
 https://github.com/danielmontagna86-source/claude-skill-protheus-qa
-Versão solicitada: v0.2.0-rc.4. Não use main/latest como versão implícita.
+Versão solicitada: v0.2.0-rc.5. Não use main/latest como versão implícita.
 
 Procedimento:
 1. Leia INSTALL.md, INSTALL_WITH_AI.md, SKILL.md e SECURITY.md da versão
@@ -30,7 +30,7 @@ Procedimento:
    Se o contexto não permitir determinar agente/projeto, pare antes de copiar.
 3. Verifique instalações existentes no projeto e no usuário. Não sobrescreva,
    remova ou duplique uma skill existente. Apresente a divergência, se houver.
-4. Confirme que a release v0.2.0-rc.4 existe e não é rascunho. Baixe somente
+4. Confirme que a release v0.2.0-rc.5 existe e não é rascunho. Baixe somente
    seus assets testing-protheus-routines.zip e SHA256SUMS.txt em staging.
    Valide o SHA-256 antes de extrair; checksum não é assinatura de segurança.
    Se download, hash ou estrutura falharem, interrompa sem instalar.

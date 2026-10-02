@@ -12,7 +12,7 @@ Contratos com chaves/argumentos permitidos; fontes e esperado identificados; blo
 
 Abrir uma rotina customizada pode ter efeitos colaterais mesmo sem clicar em Salvar. O responsável deve aprovar essa operação e usar usuário com permissões restritas. O executor não prova segurança de toda customização instalada.
 
-O import do TIR ocorre apenas no worker autorizado, mas o pacote TIR e suas dependências continuam sendo código confiado e precisam de auditoria própria. Não houve auditoria completa de CVEs nesta entrega.
+O import do TIR ocorre apenas no worker autorizado, mas o pacote TIR e suas dependências continuam sendo código confiado e precisam de auditoria própria. Há auditoria automatizada de dependências no CI, mas não avaliação completa de aplicabilidade/explorabilidade no ambiente-alvo.
 
 Screenshots e logs nativos podem conter dados sensíveis. Não existe upload automático de evidências. O console tem mascaramento literal de usuário/senha; isso não anonimiza todo dado de negócio. Defina retenção, acesso e saneamento antes do piloto. Exclusão de temporários não significa apagamento forense.
 
@@ -33,3 +33,7 @@ O setup oficial fixa Requests 2.31.0. Essa versão está nos intervalos de GHSA-
 Não é correto chamar esse runtime de livre de vulnerabilidades. A rc.3 exige revisão explícita de riscos de dependências na política externa. Isso não corrige bibliotecas, não substitui aceite institucional de risco e não libera produção. Consulte o relatório de revisão e as fontes oficiais em references/tir/review-sources.json.
 
 O teste de instalação/importação no CI não abre Webapp, navegador ou sessão ERP. O auditor roda em venv separada, sem modificar a baseline para obter um resultado artificialmente limpo. Um job de coleta concluído não significa que a auditoria encontrou zero vulnerabilidades.
+
+## Revisão rc.5
+
+O coletor rejeita PASS sem saída zero, limpeza concluída e evidência local não quarentenada. A validação PNG verifica fluxo zlib limitado a 128 MiB e layout de linhas; não autentica a tela. O ZIP rejeita aliases de nomes Windows, e os testes de distribuição extraem os mesmos bytes verificados. No POSIX, encerra também descendentes do grupo quando o líder termina; processos que escapem do grupo não são contidos por isso. No Windows, taskkill é limitado em tempo e sua falha é registrada. Não é sandbox nem substitui isolamento externo.
