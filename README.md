@@ -1,242 +1,80 @@
-# Claude Skill: ADVPL/Protheus QA Specialist
+# Protheus QA — testing-protheus-routines
 
-Claude Skill para criar planos, cenários, massas, casos e roteiros de testes para rotinas e customizações TOTVS Protheus.
+**Daniel Montagna / Protheus IA Lab · versão 0.2.0-rc.1**
 
-> Nome público do repositório: `claude-skill-protheus-qa`  
-> Nome real da skill no Claude: `testing-protheus-routines`  
-> Versão atual: `0.1.0`
+Skill para planejar e revisar testes de rotinas e customizações TOTVS Protheus, com TDN, ADVPL/TLPP, PROBAT, ExecAuto/FwModel e TIR. Mantém o nome `testing-protheus-routines` e o contrato original de 13 itens do [SKILL.md](SKILL.md).
 
-## Fonte única da verdade
+## O que esta versão entrega
 
-| Definição | Fonte oficial | Observação |
-|---|---|---|
-| Nome real da skill | `SKILL.md` > frontmatter `name` | Deve permanecer `testing-protheus-routines` |
-| Descrição oficial da skill | `SKILL.md` > frontmatter `description` | Usada pelo Claude para descoberta e acionamento |
-| Formato esperado de saída | `SKILL.md` > seção `Formato padrão de resposta` | Define os 13 itens obrigatórios |
-| Versão atual | `VERSION` | Deve ser sincronizada com `CHANGELOG.md` e releases |
-| Histórico de mudanças | `CHANGELOG.md` | Registra evolução funcional da skill |
-| Pacote instalável | `dist/testing-protheus-routines.zip` | Gerado por `scripts/package_skill.py` |
+A especialização TIR 2.14.10 acrescenta seis comandos: inspeção de fontes sem regravação, validação de caso/perfil, preflight estático, geração determinística, executor controlado e verificação de evidências. A execução liberada é **um caso de consulta por processo, em homologação segregada**. Gravações e rotinas transacionais não são suportadas pelo executor desta pré-release.
 
-Regra operacional: qualquer alteração de nome, versão ou formato de resposta deve começar pela fonte oficial acima. Outros arquivos apenas explicam ou refletem essas definições.
+**Testes offline e publicação não equivalem a homologação no ERP.** Não houve validação funcional em uma instalação Protheus nesta entrega. Os testes com helper simulado registram `execution_mode=simulated` e `erp_validated=false`.
 
-## Por que existem dois nomes?
+Comece pelo **[guia prático Windows e operação](TIR_QUICKSTART.md)**. Consulte [limites de segurança](SECURITY.md), [baseline TIR](references/tir/baseline-2.14.10.md), [notas da versão](RELEASE_NOTES/v0.2.0-rc.1.md) e [avaliações comportamentais pendentes](evals/tir-behavioral.md).
 
-O repositório usa um nome descritivo para GitHub:
+## Instalação por projeto
 
-```text
-claude-skill-protheus-qa
-```
+Claude Code, a partir do projeto:
 
-Mas a skill, dentro do Claude, usa o nome definido no `SKILL.md`:
-
-```yaml
-name: testing-protheus-routines
-```
-
-Por isso, ao instalar localmente, clone este repositório dentro de uma pasta chamada:
-
-```text
-testing-protheus-routines
-```
-
-Isso evita confusão e garante que o Claude reconheça a skill corretamente.
-
-## Objetivo
-
-Transformar documentação TDN, rotinas Protheus, customizações ADVPL/TLPP e contexto funcional em:
-
-- plano de QA;
-- matriz de cenários;
-- massa de dados;
-- estratégia de automação;
-- exemplos com PROBAT, ExecAuto/FwModel e TIR;
-- evidências de validação.
-
-## Escopo
-
-A skill cobre QA e testes para:
-
-- rotinas Protheus;
-- pontos de entrada;
-- pontos de entrada MVC;
-- validações SX3;
-- gatilhos SX7;
-- fórmulas SXB;
-- regras ADVPL/TLPP;
-- ExecAuto;
-- FwModel;
-- TIR/WebApp;
-- PROBAT/TLPP.
-
-## Fora do escopo
-
-Esta skill não é focada em:
-
-- CI/CD;
-- deploy;
-- patch;
-- T-Cloud;
-- release;
-- infraestrutura de entrega.
-
-## Pilares
-
-```text
-TDN -> comportamento esperado
-Customização -> risco
-PROBAT -> regra isolada
-ExecAuto/FwModel -> fluxo funcional técnico
-TIR -> interface WebApp/APW
-Evidência -> prova do resultado
-```
-
-## Estrutura
-
-```text
-.
-├── SKILL.md
-├── VERSION
-├── references/
-├── routines/
-├── templates/
-├── examples/
-├── evals/
-├── scripts/
-├── RELEASE_NOTES/
-├── INSTALL.md
-├── USAGE.md
-├── CHANGELOG.md
-└── LICENSE
-```
-
-## Matriz artefato x finalidade
-
-| Artefato | Finalidade | Como usar | Pode ser fonte oficial? |
-|---|---|---|---|
-| `SKILL.md` | Instrução principal da skill | Define comportamento, escopo, regras e formato de resposta | Sim, para nome, descrição e formato |
-| `VERSION` | Versão atual do pacote | Deve acompanhar releases e changelog | Sim, para versão |
-| `references/` | Consulta conceitual | Apoia regras gerais de QA, TDN, evidências, técnicas e anti-alucinação | Não, exceto como referência auxiliar |
-| `routines/` | Fichas por rotina Protheus | Orienta tabelas, riscos, massa, cenários e evidências por rotina | Sim, para contexto local da rotina |
-| `templates/` | Esqueletos reutilizáveis | Base para gerar casos, PROBAT, ExecAuto e TIR | Não, é modelo de preenchimento |
-| `examples/` | Exemplos prontos | Demonstra aplicação da skill por técnica ou rotina | Não, é exemplo validável |
-| `evals/` | Cenários de validação | Define critérios de aceite dos exemplos e do comportamento da skill | Sim, para validação |
-| `scripts/` | Automação de validação e pacote | Valida estrutura e gera ZIP instalável | Não, é ferramenta operacional |
-| `.github/workflows/` | Validação/release no GitHub Actions | Empacota, valida e prepara publicação versionada | Não, é automação de entrega |
-| `RELEASE_NOTES/` | Notas por versão | Documenta conteúdo publicado em cada versão | Sim, para release publicada |
-| `INSTALL.md` | Instalação | Explica modo local, projeto e Claude.ai | Não, é guia operacional |
-| `USAGE.md` | Uso e exemplos | Explica prompts, critérios e ligação com evals | Não, é guia de uso |
-| `CHANGELOG.md` | Histórico | Lista mudanças por versão | Sim, para histórico |
-
-## Compatibilidade por modo de instalação
-
-| Modo | Caminho/entrada | O que muda | Quando usar | Observação QA |
-|---|---|---|---|---|
-| Claude Code local | `~/.claude/skills/testing-protheus-routines` | Skill fica disponível para o usuário no ambiente local | Uso individual e recorrente | Bom para evolução rápida e validação técnica |
-| Instalação por projeto | `.claude/skills/testing-protheus-routines` | Skill fica versionada junto do projeto Protheus | Times que querem padronizar QA por repositório | Melhor para rastreabilidade por cliente/projeto |
-| Upload Claude.ai | `testing-protheus-routines.zip` | Usa pacote fechado com pasta raiz correta | Distribuição manual para ambiente Claude.ai | Deve usar ZIP gerado por `scripts/package_skill.py` |
-| GitHub Actions artifact | Workflow `validate-and-package` | Gera artefato validado automaticamente | Distribuição interna e conferência antes de release | Não substitui release versionada |
-| Release GitHub | Tag `vX.Y.Z` + ZIP | Publica versão imutável para instalação | Distribuição pública/versionada | Deve estar sincronizada com `VERSION` e `CHANGELOG.md` |
-
-## Instalação
-
-### Opção 1 - Instalação local no Claude Code
-
-```bash
-mkdir -p ~/.claude/skills
-git clone https://github.com/danielmontagna86-source/claude-skill-protheus-qa.git ~/.claude/skills/testing-protheus-routines
-```
-
-Depois reinicie ou recarregue o Claude Code.
-
-### Opção 2 - Instalação por projeto
-
-Dentro do repositório de um projeto Protheus:
-
-```bash
-mkdir -p .claude/skills
+```powershell
 git clone https://github.com/danielmontagna86-source/claude-skill-protheus-qa.git .claude/skills/testing-protheus-routines
 ```
 
-### Opção 3 - Upload para Claude.ai
+Para Codex, use `.agents/skills/testing-protheus-routines` como destino. Não mantenha cópias divergentes com o mesmo nome dentro do mesmo agente. Para uma instalação já existente, revise e atualize o clone; não clone outra skill por cima.
 
-Gere o pacote oficial:
+A instalação da skill não instala Python, TIR, navegador, driver ou um ambiente Protheus. O ZIP oficial possui a pasta raiz `testing-protheus-routines/`, inventário SHA-256 interno e checksum externo. A tag desta pré-release é `v0.2.0-rc.1` quando a publicação do workflow concluir.
 
-```bash
+## Uso da skill
+
+```text
+Use testing-protheus-routines para analisar esta customização.
+Confirme fontes, riscos, massa e resultado esperado.
+Separe PROBAT, ExecAuto/FwModel e TIR conforme o risco.
+Preserve os 13 itens. Não invente campos, mensagens ou APIs.
+Gere apenas artefatos locais. Não execute no ERP.
+```
+
+A escolha da técnica permanece: regra isolada → PROBAT confirmado; operação automática documentada → ExecAuto; modelo MVC confirmado → FwModel; interface e mensagem visual → TIR. Quando faltar evidência, entregar roteiro e declarar a lacuna. Não presumir que toda rotina disponibiliza ExecAuto/FwModel.
+
+## Ferramentas
+
+| Comando em `scripts/` | Finalidade | Acessa o ERP? |
+|---|---|---|
+| `inspect_sources.py` | Hash, encoding explícito e símbolos lexicais; preserva bytes | Não |
+| `validate_case.py` | Contrato, fontes, esperado independente e argumentos públicos | Não |
+| `preflight_tir.py` | Python/pacote/configuração, sem importar TIR | Não |
+| `generate_tir_tests.py` | Caso, perfil, código de revisão e manifesto determinístico | Não |
+| `run_tir_suite.py` | Verificação de autorização e execução isolada de consulta | Somente com todas as barreiras atendidas |
+| `collect_evidence.py` | Confere integridade dos resultados/artefatos locais | Não |
+
+`verify_tir_api.py --fetch` é uma checagem de desenvolvimento com acesso explícito ao código público fixado da TOTVS. Não abre navegador nem acessa o ERP.
+
+## Contrato e conhecimento preservados
+
+O [SKILL.md](SKILL.md) continua sendo a fonte do nome, descoberta e contrato obrigatório de 13 itens. O arquivo não foi reescrito nesta evolução. As fichas em [routines/INDEX.md](routines/INDEX.md), referências de backend, templates, exemplos e avaliações anteriores permanecem no repositório.
+
+Módulos prioritários: Financeiro, Faturamento, Estoque e Compras. A presença de uma ficha não certifica aquela rotina no seu ambiente. Campos, filial, release, customizações, massa e resultado esperado exigem confirmação.
+
+## Validação e pacote
+
+```powershell
+python -m unittest discover -s tests -v
 python scripts/validate_skill.py
+python scripts/validate_tir_release.py
+python scripts/verify_tir_api.py --fetch
 python scripts/package_skill.py
 ```
 
-Depois envie o arquivo abaixo em Claude.ai > Customize > Skills:
+A automação GitHub testa as ferramentas em Python 3.12 no Windows e no Linux, confere a API pública contra um blob fixado e somente então permite publicação. Seus resultados devem ser lidos no run correspondente; a existência do workflow não significa que ele passou.
 
-```text
-dist/testing-protheus-routines.zip
-```
+O pacote é criado em `dist/testing-protheus-routines.zip`. `dist/SHA256SUMS.txt` contém o checksum. Dados de execução, configuração com credenciais e evidências não pertencem à distribuição.
 
-## Módulos priorizados
+## Fora do escopo
 
-- Financeiro
-- Faturamento
-- Estoque
-- Compras
+Deploy de Protheus, atualização de RPO, patches, reinício de serviços, administração de produção, execução financeira/fiscal real e alterações diretas em tabelas. O workflow deste repositório serve apenas à validação e distribuição da própria skill.
 
-## Uso esperado
+## Documentação
 
-Exemplos de solicitações que devem acionar a skill:
+[Instalação original](INSTALL.md) · [Uso e cenários](USAGE.md) · [Guia TIR](TIR_QUICKSTART.md) · [Changelog](CHANGELOG.md) · [Segurança](SECURITY.md) · [Licença MIT](LICENSE).
 
-```text
-Monte testes para uma customização na FINA050.
-Crie cenários para validar ponto de entrada na MATA410.
-Gere massa de teste para Pedido de Compras MATA120.
-Crie um template PROBAT para uma regra isolada ADVPL.
-Crie um roteiro TIR para validar mensagem no WebApp.
-```
-
-## Critérios de aceite por exemplo
-
-| Exemplo | Eval correspondente | Critério mínimo de aceite |
-|---|---|---|
-| Customização FINA050 bloqueando título sem natureza | `evals/eval-mvp.md` > Eval 1 | Retornar 13 itens, classificar Financeiro/FINA050, usar SE2 e recomendar técnica conforme confirmação do ambiente |
-| MATA410 com preço abaixo do mínimo | `evals/eval-mvp.md` > Eval 2 | Retornar 13 itens, usar SC5/SC6, separar PROBAT para regra e TIR para mensagem |
-| MATA120 com centro de custo obrigatório | `evals/eval-mvp.md` > Eval 3 | Retornar 13 itens, usar SC7, definir fornecedor/produto/quantidade/preço/centro de custo e evidência |
-| MATA010 com unidade e armazém padrão | `evals/eval-mvp.md` > Eval 4 | Retornar 13 itens, usar SB1 e considerar SB2/SB5 quando aplicável |
-| MATA460 gerando documento de saída e financeiro | `evals/eval-mvp.md` > Eval 5 | Retornar 13 itens, usar SF2/SD2 e considerar SE1/SB2 conforme cenário |
-| SX3/SX7 | `evals/eval-mvp.md` > Eval 6 | Retornar 13 itens, não inventar dicionário, pedir confirmação/exportação quando necessário |
-
-## Validação
-
-Use os cenários em `evals/eval-mvp.md` para verificar se a skill retorna o formato padrão com 13 itens obrigatórios.
-
-```bash
-python scripts/validate_skill.py
-```
-
-Saída esperada:
-
-```text
-Skill validation passed.
-```
-
-## Release versionada
-
-A versão atual preparada é `0.1.0`.
-
-Para publicar uma release versionada no GitHub:
-
-1. confirme que `VERSION` contém `0.1.0`;
-2. confirme que `CHANGELOG.md` possui a seção `0.1.0`;
-3. gere o pacote com `python scripts/package_skill.py`;
-4. crie a tag `v0.1.0`;
-5. publique `dist/testing-protheus-routines.zip` como asset da release.
-
-As notas da versão ficam em `RELEASE_NOTES/v0.1.0.md`.
-
-## Documentação adicional
-
-- `INSTALL.md`: instalação e publicação.
-- `USAGE.md`: exemplos de uso.
-- `CHANGELOG.md`: histórico de versões.
-- `RELEASE_NOTES/`: notas de releases versionadas.
-
-## Status
-
-Versão pública `0.1.0` para validação técnica e evolução incremental.
+O marketplace é próprio; a publicação neste GitHub não significa inclusão no catálogo oficial da Anthropic nem homologação pela TOTVS.

@@ -1,0 +1,102 @@
+{
+  "checkresult_returns_boolean": false,
+  "commit": "dbc12e7a0563174a3f6c16832046229d71d464cf",
+  "git_blob_sha1": "082afe46702649276d994ea1e783e6e27cc6eef2",
+  "grid_checks_require_loadgrid": true,
+  "methods": {
+    "CheckResult": {
+      "allowed": [
+        "field",
+        "grid",
+        "grid_number",
+        "line",
+        "user_value"
+      ],
+      "required": [
+        "field",
+        "user_value"
+      ]
+    },
+    "ClickFolder": {
+      "allowed": [
+        "item",
+        "position"
+      ],
+      "required": [
+        "item"
+      ]
+    },
+    "GetValue": {
+      "allowed": [
+        "field",
+        "grid",
+        "grid_number",
+        "line",
+        "position"
+      ],
+      "required": [
+        "field"
+      ]
+    },
+    "IfExists": {
+      "allowed": [
+        "string",
+        "timeout"
+      ],
+      "required": [
+        "string"
+      ]
+    },
+    "LoadGrid": {
+      "allowed": [],
+      "required": []
+    },
+    "SearchBrowse": {
+      "allowed": [
+        "column",
+        "identifier",
+        "index",
+        "key",
+        "term"
+      ],
+      "required": [
+        "term"
+      ]
+    },
+    "SetButton": {
+      "allowed": [
+        "button",
+        "is_browse",
+        "position",
+        "sub_item"
+      ],
+      "required": [
+        "button"
+      ]
+    },
+    "WaitHide": {
+      "allowed": [
+        "match_case",
+        "string",
+        "timeout"
+      ],
+      "required": [
+        "string"
+      ]
+    },
+    "WaitShow": {
+      "allowed": [
+        "match_case",
+        "string",
+        "timeout"
+      ],
+      "required": [
+        "string"
+      ]
+    }
+  },
+  "native_error_flush": "AssertTrue",
+  "scope": "supported_public_subset_read_only_pilot",
+  "source": "https://github.com/totvs/tir/blob/dbc12e7a0563174a3f6c16832046229d71d464cf/tir/main.py",
+  "tir_version": "2.14.10"
+}

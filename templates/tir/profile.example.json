@@ -1,0 +1,46 @@
+{
+  "baseline": {
+    "appserver": "PREENCHER",
+    "interface_evidence": "PREENCHER",
+    "lib": "PREENCHER",
+    "release": "PREENCHER",
+    "rpo": "PREENCHER",
+    "webapp": "PREENCHER"
+  },
+  "config": {
+    "Browser": "Chrome",
+    "Environment": "PREENCHER",
+    "Headless": false,
+    "Language": "pt-br",
+    "NewHome": false,
+    "POUILogin": false,
+    "SSOLogin": false,
+    "TimeOut": 90,
+    "Url": "https://PREENCHER.example.invalid/webapp/"
+  },
+  "enabled": false,
+  "environment_kind": "homologation",
+  "identity_checks": [
+    {
+      "kind": "environment",
+      "text": "PREENCHER"
+    },
+    {
+      "kind": "group",
+      "text": "PREENCHER"
+    },
+    {
+      "kind": "branch",
+      "text": "PREENCHER"
+    }
+  ],
+  "schema_version": 1,
+  "setup": {
+    "branch": "PREENCHER",
+    "date": "01/10/2026",
+    "group": "PREENCHER",
+    "initial_program": "PREENCHER",
+    "module": "PREENCHER"
+  },
+  "tir_version": "2.14.10"
+}

@@ -2,6 +2,28 @@
 
 Todas as mudanças relevantes deste projeto serão registradas aqui.
 
+## 0.2.0-rc.1 - 2026-10-01
+
+### Added
+
+- Especialização TIR 2.14.10 com manifesto de API pública e verificação do blob oficial.
+- Seis comandos de inspeção, validação, preflight, geração, execução controlada de consulta e coleta.
+- Contratos estritos, hashes, autorização externa expiráveis, worker isolado e evidências locais.
+- Testes determinísticos e controles negativos, sem conexão ao ERP.
+- Guia Windows, segurança, templates desabilitados e avaliação comportamental explicitamente pendente.
+- Workflow Python 3.12 Windows/Linux, pacote reproduzível e publicação condicionada às verificações.
+
+### Changed
+
+- Distribuição com inventário SHA-256 e exclusão de dados de execução.
+- Origem GitHub no manifesto do marketplace corrigida para objeto tipado.
+- Identidade, SKILL.md, contrato de 13 itens e fichas existentes preservados.
+
+### Limitations
+
+- Pré-release, não homologada em Protheus. Executor limitado a consulta; gravações/transações bloqueadas.
+- Sem certificação TOTVS, benchmark comportamental concluído ou revisão humana externa.
+
 ## 0.1.0 - 2026-04-28
 
 ### Added
